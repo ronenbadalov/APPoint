@@ -1,3 +1,4 @@
+import { LogoutButton } from "@/components/LogoutButton";
 import { ModeToggle } from "@/components/ModeToggle";
 
 export default function Home() {
@@ -9,6 +10,7 @@ export default function Home() {
         production
       </p>
       <ModeToggle />
+      <LogoutButton />
     </section>
   );
 }

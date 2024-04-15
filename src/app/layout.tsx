@@ -1,3 +1,5 @@
+import { Providers } from "@/components/Providers";
+import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/context/themeContext";
 import "@/styles/globals.css";
 import type { ChildrenProps } from "@/types";
@@ -21,14 +23,17 @@ export default async function RootLayout({ children }: ChildrenProps) {
   return (
     <html lang="en">
       <body className={`${inter.className}`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <Providers>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );
