@@ -7,10 +7,10 @@ import { Inter } from "next/font/google";
 
 export const metadata = {
   description:
-    "A highly opinionated and complete starter for Next.js projects ready to production. Includes Typescript, Styled Components, Prettier, ESLint, Husky, SEO, and more.",
+    "APPoint is a free appointment booking system that allows you to schedule appointments, manage your calendar, and book appointments with ease.",
   keywords:
-    "next, starter, typescript, tailwind css, prettier, eslint, husky, seo",
-  title: "Next Starter",
+    "appointments, calendar, schedule, appointment, booking, booking system, appointment system, appointment booking, appointment scheduling, appointment calendar, appointment app, appointment booking system, appointment booking app, appointment booking calendar, appointment booking schedule, appointment booking system app, appointment booking system calendar, appointment booking system schedule, appointment booking app calendar, appointment booking app schedule, appointment booking calendar schedule, appointment booking system app calendar, appointment booking system app schedule, appointment booking system calendar schedule, appointment booking",
+  title: "APPoint",
 };
 
 const inter = Inter({
@@ -22,7 +22,7 @@ const inter = Inter({
 export default async function RootLayout({ children }: ChildrenProps) {
   return (
     <html lang="en">
-      <body className={`${inter.className}`}>
+      <body className={`${inter.className} min-h-screen`}>
         <Providers>
           <ThemeProvider
             attribute="class"
