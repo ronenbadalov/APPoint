@@ -140,7 +140,7 @@ export const options: NextAuthOptions = {
         },
       });
       if (userFromDb && !userFromDb.role && role && token.email) {
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
           where: {
             email: token.email,
           },
@@ -149,6 +149,7 @@ export const options: NextAuthOptions = {
           },
         });
         cookieStore.delete("role");
+        await handleNewUserDetails(updatedUser);
       }
 
       session.user.role = token.role as Role;

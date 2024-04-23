@@ -2,8 +2,9 @@ import { options } from "@/app/api/auth/[...nextauth]/options";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
-import { LogoutButton } from "../LogoutButton";
-import { ModeToggle } from "../ModeToggle";
+import { LogoutButton } from "./LogoutButton";
+import { ModeToggle } from "./ModeToggle";
+import { NavLinks } from "./NavLinks";
 
 export const Header = async () => {
   const session = await getServerSession(options);
@@ -15,17 +16,15 @@ export const Header = async () => {
             <CalendarIcon width={24} height={24} />
             <span className="font-bold sm:inline-block">APPoint</span>
           </Link>
-          <nav className="flex items-center gap-4 text-sm lg:gap-6">
-            <Link
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-              href="/signup"
-            >
-              Docs
-            </Link>
-          </nav>
+          {session && session.user && <NavLinks role={session.user.role} />}
         </div>
         <div className="flex flex-1 items-center space-x-2 justify-end">
-          <nav className="flex items-center [&>*]:border-0">
+          {session && session.user?.name && (
+            <p className="text-sm text-foreground/80">
+              Welcome, {session.user.name}
+            </p>
+          )}
+          <nav className="flex items-center">
             <ModeToggle />
             {session && session.user && <LogoutButton />}
           </nav>

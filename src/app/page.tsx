@@ -1,18 +1,23 @@
-import { LogoutButton } from "@/components/LogoutButton/LogoutButton";
-import { ModeToggle } from "@/components/ModeToggle";
+import { paths } from "@/lib/paths";
+import { ChildrenProps } from "@/types";
+import { Role } from "@prisma/client";
 import { getServerSession } from "next-auth";
+import { headers } from "next/headers";
+import { options } from "./api/auth/[...nextauth]/options";
 
-export default async function Home() {
-  const session = await getServerSession();
-  return (
-    <section className="p-8 flex flex-col justify-center">
-      <h1 className="text-3xl font-bold font-poppins">{session?.user?.name}</h1>
-      <p className="text-lg">
-        A highly opinionated and complete starter for Next.js projects ready to
-        production
-      </p>
-      <ModeToggle />
-      <LogoutButton />
-    </section>
-  );
+const defaultRoutes = {
+  [Role.BUSINESS]: paths.MY_BUSINESS,
+  [Role.CUSTOMER]: paths.EXPLORE,
+};
+
+export default async function Page({ children }: ChildrenProps) {
+  const session = await getServerSession(options);
+  console.log(session);
+  const headersList = headers();
+  const domain = headersList.get("x-forwarded-host") || "";
+  const protocol = headersList.get("x-forwarded-proto") || "";
+  const pathname = headersList.get("x-invoke-path") || "";
+  console.log(pathname);
+  console.log(domain);
+  return <>{children}</>;
 }

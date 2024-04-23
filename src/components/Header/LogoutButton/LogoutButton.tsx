@@ -1,18 +1,18 @@
 "use client";
+import { LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { IoIosLogOut } from "react-icons/io";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 
 export const LogoutButton = () => {
   return (
     <Button
-      variant="outline"
+      variant="ghost"
       size="icon"
       onClick={async () => {
         await signOut();
       }}
     >
-      <IoIosLogOut size={20} />
+      <LogOut size={20} />
     </Button>
   );
 };
