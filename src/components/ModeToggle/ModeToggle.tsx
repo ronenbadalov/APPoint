@@ -7,11 +7,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoonIcon, SunIcon } from "@radix-ui/react-icons";
+import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 
 export function ModeToggle() {
   const { setTheme } = useTheme();
-
+  const { data: session } = useSession();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
