@@ -1,11 +1,5 @@
-import { nextAuthOptions } from "@/lib/auth";
-import { NextApiRequest, NextApiResponse } from "next";
-import NextAuth from "next-auth/next";
+import NextAuth from "next-auth";
+import { options } from "./options";
 
-function auth(
-  req: NextApiRequest,
-  res: NextApiResponse
-): ReturnType<typeof NextAuth> {
-  return NextAuth(req, res, nextAuthOptions(req, res));
-}
-export { auth as GET, auth as POST };
+const handler = NextAuth(options);
+export { handler as GET, handler as POST };

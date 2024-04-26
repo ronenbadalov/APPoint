@@ -1,3 +1,4 @@
+import { Header } from "@/components/Header";
 import { Providers } from "@/components/Providers";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/context/themeContext";
@@ -30,7 +31,8 @@ export default async function RootLayout({ children }: ChildrenProps) {
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <Header />
+            <div className="container relative">{children}</div>
             <Toaster />
           </ThemeProvider>
         </Providers>

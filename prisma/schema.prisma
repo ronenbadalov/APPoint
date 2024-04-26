@@ -55,10 +55,10 @@ model BusinessDetails {
   businessName String @map("business_name")
   address      String
   phone        String
-  workingHours String @map("working_hours")
+  workingHours WorkingHours[] @relation("business_working_hours")
   description  String
   services     Service[] @relation("business_services")
-    appointments Appointment[] @relation("business_appointments")
+  appointments Appointment[] @relation("business_appointments")
 
   @@map("business_details")
 }
@@ -99,6 +99,20 @@ model Appointment {
   status       AppointmentStatus
 
   @@map("appointments")
+}
+
+model WorkingHours {
+  id           String   @id @default(uuid())
+  business     BusinessDetails @relation("business_working_hours",fields: [businessId], references: [id],onDelete: Cascade)
+  businessId   String @map("business_id")
+  day          Int
+  startTime    DateTime? @map("start_time")
+  endTime      DateTime? @map("end_time")
+  isClosed     Boolean? @map("is_closed")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("working_hours")
 }
 
 model Account {
