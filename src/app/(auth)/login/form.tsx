@@ -110,7 +110,12 @@ export default function LoginForm() {
           )}
         />
         <div className="grid">
-          <Button type="submit" disabled={form.formState.isSubmitting}>
+          <Button
+            type="submit"
+            disabled={
+              form.formState.isSubmitting || form.formState.isSubmitSuccessful
+            }
+          >
             {form.formState.isSubmitting ? "Loading...." : "Login"}
           </Button>
         </div>
