@@ -97,3 +97,8 @@ export const handleNewUserDetails = async (newUser: User) => {
     });
   }
 };
+
+export const reloadSession = () => {
+  const event = new Event("visibilitychange");
+  document.dispatchEvent(event);
+};

@@ -14,8 +14,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { paths } from "@/lib/paths";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -32,6 +33,7 @@ const FormSchema = z.object({
 type FormData = z.infer<typeof FormSchema>;
 
 export default function LoginForm() {
+  const { data: session } = useSession();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -53,12 +55,12 @@ export default function LoginForm() {
         redirect: false,
       });
       if (!response?.error) {
-        router.push("/");
+        router.push(paths.EXPLORE);
         router.refresh();
       }
 
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error("Invalid credentials. Please try again.");
       }
       toast({ title: "Login Successful" });
     } catch (error: any) {
@@ -110,12 +112,7 @@ export default function LoginForm() {
           )}
         />
         <div className="grid">
-          <Button
-            type="submit"
-            disabled={
-              form.formState.isSubmitting || form.formState.isSubmitSuccessful
-            }
-          >
+          <Button type="submit" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? "Loading...." : "Login"}
           </Button>
         </div>

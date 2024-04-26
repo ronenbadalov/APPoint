@@ -1,12 +1,11 @@
 import { handleNewUserDetails, hashPassword, verifyPassword } from "@/lib/auth";
+import { paths } from "@/lib/paths";
 import prisma from "@/lib/prisma";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { Role } from "@prisma/client";
-import jwt from "jsonwebtoken";
+import { Role, User } from "@prisma/client";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { cookies } from "next/headers";
 
 export const options: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -15,7 +14,6 @@ export const options: NextAuthOptions = {
   },
   pages: {
     signIn: "/login",
-    newUser: "/signup",
   },
   providers: [
     GoogleProvider({
@@ -110,60 +108,24 @@ export const options: NextAuthOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async signIn({ user, account }) {
-      const cookieStore = cookies();
-      const role = cookieStore.get("role")?.value;
-      const userFromDb = await prisma.user.findFirst({
-        where: {
-          email: user.email,
-        },
-      });
-      if (!userFromDb && account?.provider === "google" && !role) {
-        const token = jwt.sign(
-          { action: "allow_selecting_role" },
-          "random_key"
-        );
-        return "/select-role?token=" + token;
-      }
-
+    async signIn() {
       return true;
     },
     async redirect({ url, baseUrl }) {
-      return baseUrl;
+      return `${baseUrl}${paths.EXPLORE}`;
     },
     async session({ session, token }) {
-      const cookieStore = cookies();
-      const role = cookieStore.get("role")?.value;
-      const userFromDb = await prisma.user.findFirst({
-        where: {
-          email: token.email,
-        },
-      });
-      if (userFromDb && !userFromDb.role && role && token.email) {
-        const updatedUser = await prisma.user.update({
-          where: {
-            email: token.email,
-          },
-          data: {
-            role: role as Role,
-          },
-        });
-        cookieStore.delete("role");
-        await handleNewUserDetails(updatedUser);
-      }
-
-      session.user.role = token.role as Role;
+      if (token.role as Role) session.user.role = token.role as Role;
+      session.user.id = token.id as string;
       return session;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
-        const u = user as unknown as any;
-        return {
-          ...token,
-          id: u.id,
-          role: u.role,
-          randomKey: u.randomKey,
-        };
+        token.id = user.id;
+        if ((user as User).role) token.role = (user as User).role as Role;
+      }
+      if (trigger === "update" && session?.user?.role) {
+        token.role = session.user.role;
       }
       return token;
     },

@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
+import { defaultPaths } from "@/lib/paths";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Role } from "@prisma/client";
 import { signIn } from "next-auth/react";
@@ -59,7 +60,7 @@ export default function FormPage() {
         redirect: false,
       });
       if (!response?.error) {
-        router.push("/");
+        router.push(defaultPaths[role]);
         router.refresh();
       }
 

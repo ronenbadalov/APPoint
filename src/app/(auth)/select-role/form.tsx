@@ -10,10 +10,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { reloadSession } from "@/lib/auth";
+import { defaultPaths } from "@/lib/paths";
+import { updateUser } from "@/mutations/updateUser";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Role } from "@prisma/client";
-import { addMinutes } from "date-fns";
-import { signIn, useSession } from "next-auth/react";
+import { useMutation } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -24,18 +29,32 @@ const FormSchema = z.object({
 type FormData = z.infer<typeof FormSchema>;
 
 export function SelectRoleForm() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const form = useForm<FormData>({
     resolver: zodResolver(FormSchema),
   });
-
+  const router = useRouter();
+  const { mutate: setRoleToUser } = useMutation({
+    mutationFn: updateUser,
+    onSuccess: () => {
+      const role = form.getValues().role;
+      update({ ...session, user: { ...session!.user, role } });
+      reloadSession();
+      // setTimeout(() => {
+      //   router.push(defaultPaths[role]);
+      // }, 1000);
+    },
+  });
   const onSubmit = async (data: FormData) => {
     const { role } = data;
-    const now = new Date(); // current date and time
-    const expires = addMinutes(now, 15).toUTCString();
-    document.cookie = `role=${role};path=/;expires=${expires}`;
-    signIn("google");
+    setRoleToUser({ userId: session!.user.id, partialUser: { role } });
   };
+
+  useEffect(() => {
+    if (session && session.user.role) {
+      router.push(defaultPaths[session.user.role]);
+    }
+  }, [session]);
 
   return (
     <Form {...form}>
@@ -79,7 +98,10 @@ export function SelectRoleForm() {
           )}
         />
         <div className="grid">
-          <Button type="submit" disabled={form.formState.isSubmitting}>
+          <Button
+            type="submit"
+            disabled={form.formState.isSubmitting || !session}
+          >
             {form.formState.isSubmitting ? "Loading...." : "Continue"}
           </Button>
         </div>
