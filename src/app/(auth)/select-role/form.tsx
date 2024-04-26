@@ -61,7 +61,7 @@ export function SelectRoleForm() {
                       <RadioGroupItem value={Role.CUSTOMER} />
                     </FormControl>
                     <FormLabel className="font-normal">
-                      I'm a customer
+                      I&apos;m a customer
                     </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3 space-y-0">
@@ -69,7 +69,7 @@ export function SelectRoleForm() {
                       <RadioGroupItem value={Role.BUSINESS} />
                     </FormControl>
                     <FormLabel className="font-normal">
-                      I'm a business owner
+                      I&apos;m a business owner
                     </FormLabel>
                   </FormItem>
                 </RadioGroup>
