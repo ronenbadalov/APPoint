@@ -12,7 +12,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { reloadSession } from "@/lib/auth";
 import { defaultPaths } from "@/lib/paths";
-import { updateUser } from "@/mutations/updateUser";
+import { newUserHandle } from "@/mutations/newUserHandle";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Role } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
@@ -35,19 +35,16 @@ export function SelectRoleForm() {
   });
   const router = useRouter();
   const { mutate: setRoleToUser } = useMutation({
-    mutationFn: updateUser,
+    mutationFn: newUserHandle,
     onSuccess: () => {
       const role = form.getValues().role;
       update({ ...session, user: { ...session!.user, role } });
       reloadSession();
-      // setTimeout(() => {
-      //   router.push(defaultPaths[role]);
-      // }, 1000);
     },
   });
   const onSubmit = async (data: FormData) => {
     const { role } = data;
-    setRoleToUser({ userId: session!.user.id, partialUser: { role } });
+    setRoleToUser({ role, userId: session!.user.id });
   };
 
   useEffect(() => {
