@@ -26,7 +26,6 @@ export default function MyBusinessPage() {
     queryKey: ["my-business"],
     queryFn: getMyBusiness,
   });
-  console.log(response?.data);
   const businessData: BusinessData = response?.data;
 
   return isLoading ? (
