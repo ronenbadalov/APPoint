@@ -1,18 +1,51 @@
 "use client";
-
-import { FormServiceInput } from "@/app/(business)/my-business/page";
+import { ServiceModalFormData } from "@/app/(business)/my-business/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CircleDollarSign, Hourglass } from "lucide-react";
+import { CircleDollarSign, EditIcon, Hourglass, Trash } from "lucide-react";
+import { Button } from "../ui/button";
+
+interface ServiceCardProps extends ServiceModalFormData {
+  onEdit?: () => void;
+  onDelete?: () => void;
+}
+
 export const ServiceCard = ({
   name,
   price,
   duration,
   description,
-}: FormServiceInput) => {
+  onDelete,
+  onEdit,
+}: ServiceCardProps) => {
   return (
     <Card className="w-[270px]">
       <CardHeader>
-        <CardTitle>{name}</CardTitle>
+        <div className="flex flex-row justify-between">
+          <CardTitle className="w-fit h-fit ">{name}</CardTitle>
+          <div className="flex gap-2">
+            {onEdit && (
+              <Button
+                type="button"
+                onClick={onEdit}
+                className="w-6 h-6"
+                size="icon"
+              >
+                <EditIcon size={14} />
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                type="button"
+                onClick={onDelete}
+                className="w-6 h-6"
+                size="icon"
+              >
+                <Trash size={14} />
+              </Button>
+            )}
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground">{description}</p>
       </CardHeader>
       <CardContent>
         <table>

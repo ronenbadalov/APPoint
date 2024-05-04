@@ -15,14 +15,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
 import { updateMyBusiness } from "@/mutations";
 import { getMyBusiness } from "@/queries";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BusinessDetails, Service, WorkingHours } from "@prisma/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { LoaderCircle, Pencil, Plus } from "lucide-react";
+import { EditIcon, LoaderCircle, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
@@ -99,7 +98,7 @@ export default function MyBusinessPage() {
       refetch();
     },
   });
-  const { toast } = useToast();
+
   const businessData: BusinessData = useMemo(() => response?.data, [response]);
 
   const form = useForm<MyBusinessFormData>({
@@ -120,6 +119,7 @@ export default function MyBusinessPage() {
     fields: servicesFields,
     replace,
     append,
+    remove,
   } = useFieldArray({
     control: form.control,
     name: "services",
@@ -142,8 +142,6 @@ export default function MyBusinessPage() {
     },
   });
 
-  console.log(form.formState.errors);
-
   const openServiceModal = () => {
     setIsServiceModalOpen(true);
   };
@@ -158,6 +156,15 @@ export default function MyBusinessPage() {
       serviceModalForm.reset();
       closeServiceModal();
     } catch (error: any) {}
+  };
+
+  const onServiceEdit = (index: number) => {
+    serviceModalForm.reset(servicesFields[index]);
+    setIsServiceModalOpen(true);
+  };
+
+  const onServiceDelete = (index: number) => {
+    remove(index);
   };
 
   useEffect(() => {
@@ -229,7 +236,7 @@ export default function MyBusinessPage() {
               </div>
               {!isEditing && (
                 <Button variant="secondary" onClick={() => setIsEditing(true)}>
-                  <Pencil size={14} className="mr-2" />
+                  <EditIcon size={14} className="mr-2" />
                   Edit
                 </Button>
               )}
@@ -439,11 +446,15 @@ export default function MyBusinessPage() {
                   <td className=" w-full">
                     <div className="grid gap-5 grid-cols-3">
                       {isEditing ? (
-                        servicesFields.map((field) => (
-                          <ServiceCard key={field.id} {...field} />
+                        servicesFields.map((field, i) => (
+                          <ServiceCard
+                            key={field.id}
+                            {...field}
+                            onEdit={() => onServiceEdit(i)}
+                            onDelete={() => onServiceDelete(i)}
+                          />
                         ))
                       ) : businessData?.services.length ? (
-                        // RONEN-TODO: add edit & delete functionality
                         businessData.services.map((service) => (
                           <ServiceCard key={service.id} {...service} />
                         ))
@@ -454,7 +465,7 @@ export default function MyBusinessPage() {
                       )}
                       {isEditing && (
                         <Card
-                          className="w-[270px] pointer flex items-center justify-center"
+                          className="w-[270px] min-h-[134px] pointer flex items-center justify-center"
                           onClick={openServiceModal}
                         >
                           <div className="flex gap-1">
