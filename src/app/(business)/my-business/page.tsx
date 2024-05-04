@@ -1,12 +1,59 @@
 "use client";
 import { ServiceCard } from "@/components/ServiceCard";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
 import { getMyBusiness } from "@/queries/getMyBusiness";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { BusinessDetails, Service, WorkingHours } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { LoaderCircle, Pencil } from "lucide-react";
+import { LoaderCircle, Pencil, Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import * as z from "zod";
+import { NewServiceModal } from "./NewServiceModal";
+import { TimePicker } from "./TimePicker";
+
+export const serviceObj = z.object({
+  name: z.string(),
+  price: z.number(),
+  duration: z.number(),
+  description: z.string().optional(),
+});
+
+const FormSchema = z.object({
+  businessName: z.string(),
+  address: z.string(),
+  phone: z.string().min(9, {
+    message: "Phone number must be at least 9 characters.",
+  }),
+  workingHours: z.array(
+    z.object({
+      day: z.number(),
+      isClosed: z.boolean().nullable(),
+      startTime: z.date().nullable(),
+      endTime: z.date().nullable(),
+    })
+  ),
+  description: z.string().optional(),
+  services: z.array(serviceObj),
+});
+
+export type MyBusinessFormData = z.infer<typeof FormSchema>;
+
 type BusinessData =
   | (BusinessDetails & { workingHours: WorkingHours[]; services: Service[] })
   | undefined;
@@ -22,134 +69,349 @@ const days = [
 ];
 
 export default function MyBusinessPage() {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const { data: response, isLoading } = useQuery({
     queryKey: ["my-business"],
     queryFn: getMyBusiness,
   });
-  const businessData: BusinessData = response?.data;
+  const { toast } = useToast();
+  const businessData: BusinessData = useMemo(() => response?.data, [response]);
+
+  const form = useForm<MyBusinessFormData>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      businessName: "",
+      address: "",
+      phone: "",
+      workingHours: [],
+      description: "",
+      services: [],
+    },
+  });
+
+  const workingHours = form.watch("workingHours");
+
+  const { replace, append } = useFieldArray({
+    control: form.control,
+    name: "services",
+  });
+  const onSubmit = async (data: MyBusinessFormData) => {
+    try {
+      toast({ title: "Successfully signed up" });
+    } catch (error: any) {
+      toast({ title: "An error occurred", description: error.message });
+    }
+  };
+
+  const openServiceModal = () => {
+    setIsServiceModalOpen(true);
+  };
+
+  const closeServiceModal = () => {
+    setIsServiceModalOpen(false);
+  };
+
+  useEffect(() => {
+    if (!businessData || !isEditing) return;
+    form.setValue("businessName", businessData.businessName);
+    form.setValue("address", businessData.address);
+    form.setValue("phone", businessData.phone);
+    form.setValue(
+      "workingHours",
+      businessData.workingHours.map((wh) => ({
+        day: wh.day,
+        isClosed: wh.isClosed,
+        startTime: wh.startTime ? new Date(wh.startTime) : null,
+        endTime: wh.endTime ? new Date(wh.endTime) : null,
+      }))
+    );
+    form.setValue("description", businessData.description);
+    replace(
+      businessData.services.map(({ duration, description, name, price }) => ({
+        duration,
+        description,
+        name,
+        price,
+      }))
+    );
+  }, [businessData, isEditing, form, replace]);
 
   return isLoading ? (
-    <div className=" flex justify-center items-center h-screen">
+    <div className=" flex justify-center items-center mt-64">
       <LoaderCircle className="animate-spin" size={32} />
     </div>
   ) : (
-    <div className="py-5 flex flex-col max-w-screen-lg m-auto">
-      <div className="flex justify-between w-full items-center">
-        <div className="flex gap-5 items-center">
-          <div className="rounded-full bg-gray-200 w-28 h-28 flex justify-center items-center">
-            {/* <img src={businessData?.logo} alt="logo" /> */}
-          </div>
-          <h1 className="text-2xl font-bold">{businessData?.businessName}</h1>
-        </div>
-        <Button variant="secondary">
-          <Pencil size={14} className="mr-2" />
-          Edit
-        </Button>
-      </div>
-      <Separator className="my-5" />
-      <table className="flex flex-col gap-3">
-        <tr className="flex gap-5">
-          <td className="w-36">
-            <p className="text-muted-foreground font-semibold">Description</p>
-          </td>
-          <td className=" w-full">
-            {businessData?.description ? (
-              <p className="">{businessData?.description}</p>
-            ) : (
-              <p className="text-muted-foreground italic">
-                No description provided
-              </p>
-            )}
-          </td>
-        </tr>
-        <tr className="flex gap-5">
-          <td className="w-36">
-            <p className="text-muted-foreground font-semibold">Address</p>
-          </td>
-          <td className=" w-full">
-            {businessData?.address ? (
-              <p className="">{businessData?.address}</p>
-            ) : (
-              <p className="text-muted-foreground italic">
-                No address provided
-              </p>
-            )}
-          </td>
-        </tr>
-        <tr className="flex gap-5">
-          <td className="w-36">
-            <p className="text-muted-foreground font-semibold">Phone</p>
-          </td>
-          <td className=" w-full">
-            {businessData?.phone ? (
-              <p className="">{businessData?.phone}</p>
-            ) : (
-              <p className="text-muted-foreground italic">No phone provided</p>
-            )}
-          </td>
-        </tr>
-        <tr className="flex gap-5">
-          <td className="w-36">
-            <p className="text-muted-foreground font-semibold whitespace-nowrap	">
-              Working Hours
-            </p>
-          </td>
-          <td className=" w-full">
-            <table>
-              {days.map((day, index) => {
-                const workingHour = businessData?.workingHours.find(
-                  (wh) => wh.day === index + 1
-                );
-                const isClosed = workingHour?.isClosed;
-                const startTime = workingHour?.startTime
-                  ? format(workingHour.startTime, "HH:mm")
-                  : undefined;
-                const endTime = workingHour?.endTime
-                  ? format(workingHour.endTime, "HH:mm")
-                  : undefined;
-                return (
-                  <tr key={index} className="flex items-center gap-2">
-                    <td className="w-36">
-                      <p className="text-muted-foreground">{day}</p>
-                    </td>
-                    <td className="w-36">
-                      {isClosed ? (
-                        <p className="text-muted-foreground italic">Closed</p>
-                      ) : workingHour ? (
-                        <p>
-                          {startTime} - {endTime}
-                        </p>
-                      ) : (
-                        <p className="text-muted-foreground italic">
-                          Not provided
-                        </p>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </table>
-          </td>
-        </tr>
-        <tr className="flex gap-5">
-          <td className="w-36">
-            <p className="text-muted-foreground font-semibold">Services</p>
-          </td>
-          <td className=" w-full">
-            <div className="grid grid-cols-2 gap-5">
-              {businessData?.services.length ? (
-                businessData.services.map((service) => (
-                  <ServiceCard key={service.id} {...service} />
-                ))
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="py-5 flex flex-col max-w-screen-lg m-auto">
+          <div className="flex w-full items-center gap-5">
+            <div className="flex gap-5 items-center w-full">
+              <div className="rounded-full bg-gray-200 w-28 h-28 flex justify-center items-center">
+                {/* <img src={businessData?.logo} alt="logo" /> */}
+              </div>
+              {isEditing ? (
+                <FormField
+                  control={form.control}
+                  name="businessName"
+                  data-lpignore
+                  render={({ field, formState: { errors } }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          className="w-full text-2xl font-bold h-12"
+                          placeholder="Business Name"
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               ) : (
-                <p className="text-muted-foreground italic">
-                  No services provided
-                </p>
+                <h1 className="ml-4 text-2xl font-bold">
+                  {businessData?.businessName}
+                </h1>
               )}
             </div>
-          </td>
-        </tr>
-      </table>
-    </div>
+            <Button
+              variant="secondary"
+              onClick={() => setIsEditing((state) => !state)}
+            >
+              <Pencil size={14} className="mr-2" />
+              Edit
+            </Button>
+          </div>
+          <Separator className="my-5" />
+          <table>
+            <tbody className="flex flex-col gap-3">
+              <tr className="flex gap-5">
+                <td className="w-36">
+                  <p className="text-muted-foreground font-semibold">
+                    Description
+                  </p>
+                </td>
+                <td className=" w-full">
+                  {isEditing ? (
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      data-lpignore
+                      render={({ field, formState: { errors } }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Tell us about your business"
+                              rows={5}
+                              {...field}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  ) : businessData?.description ? (
+                    <p className="">{businessData.description}</p>
+                  ) : (
+                    <p className="text-muted-foreground italic">
+                      No description provided
+                    </p>
+                  )}
+                </td>
+              </tr>
+              <tr className="flex gap-5">
+                <td className="w-36">
+                  <p className="text-muted-foreground font-semibold">Address</p>
+                </td>
+                <td className=" w-full">
+                  {isEditing ? (
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      data-lpignore
+                      render={({ field, formState: { errors } }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  ) : businessData?.address ? (
+                    <p className="">{businessData.address}</p>
+                  ) : (
+                    <p className="text-muted-foreground italic">
+                      No address provided
+                    </p>
+                  )}
+                </td>
+              </tr>
+              <tr className="flex gap-5">
+                <td className="w-36">
+                  <p className="text-muted-foreground font-semibold">Phone</p>
+                </td>
+                <td className=" w-full">
+                  {isEditing ? (
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      data-lpignore
+                      render={({ field, formState: { errors } }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} ref={null} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  ) : businessData?.phone ? (
+                    <p className="">{businessData?.phone}</p>
+                  ) : (
+                    <p className="text-muted-foreground italic">
+                      No phone provided
+                    </p>
+                  )}
+                </td>
+              </tr>
+              <tr className="flex gap-5">
+                <td className="w-36">
+                  <p className="text-muted-foreground font-semibold whitespace-nowrap	">
+                    Working Hours
+                  </p>
+                </td>
+                <td className=" w-full">
+                  <table>
+                    <tbody>
+                      {days.map((day, index) => {
+                        const workingHour = businessData?.workingHours.find(
+                          (wh) => wh.day === index + 1
+                        );
+                        const isClosed = workingHour?.isClosed;
+                        const startTime = workingHour?.startTime
+                          ? format(workingHour.startTime, "HH:mm")
+                          : undefined;
+                        const endTime = workingHour?.endTime
+                          ? format(workingHour.endTime, "HH:mm")
+                          : undefined;
+                        return (
+                          <tr
+                            key={index}
+                            className="flex items-center gap-2 pb-3"
+                          >
+                            <td className="w-36">
+                              <p className="text-muted-foreground">{day}</p>
+                            </td>
+                            <td className="w-full">
+                              {isEditing ? (
+                                <div className="flex align-center gap-3">
+                                  <FormField
+                                    control={form.control}
+                                    name={`workingHours.${index}.startTime`}
+                                    render={({ field }) => (
+                                      <TimePicker
+                                        date={field.value ?? undefined}
+                                        setDate={field.onChange}
+                                        disabled={
+                                          !!workingHours[index]?.isClosed
+                                        }
+                                      />
+                                    )}
+                                  />
+                                  <div className="pt-6">-</div>
+                                  <FormField
+                                    control={form.control}
+                                    name={`workingHours.${index}.endTime`}
+                                    render={({ field }) => (
+                                      <TimePicker
+                                        date={field.value ?? undefined}
+                                        setDate={field.onChange}
+                                        disabled={
+                                          !!workingHours[index]?.isClosed
+                                        }
+                                      />
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name={`workingHours.${index}.isClosed`}
+                                    render={({ field }) => (
+                                      <FormItem className="space-y-0 flex gap-2 pt-7">
+                                        <FormControl>
+                                          <Checkbox
+                                            checked={!!field.value}
+                                            onCheckedChange={field.onChange}
+                                          />
+                                        </FormControl>
+                                        <FormLabel>Closed</FormLabel>
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+                              ) : isClosed ? (
+                                <p className="text-muted-foreground italic">
+                                  Closed
+                                </p>
+                              ) : workingHour ? (
+                                <p>
+                                  {startTime} - {endTime}
+                                </p>
+                              ) : (
+                                <p className="text-muted-foreground italic">
+                                  Not provided
+                                </p>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr className="flex gap-5">
+                <td className="w-36">
+                  <p className="text-muted-foreground font-semibold">
+                    Services
+                  </p>
+                </td>
+                <td className=" w-full">
+                  <div className="grid gap-5 grid-cols-3">
+                    {businessData?.services.length ? (
+                      businessData.services.map((service) => (
+                        <ServiceCard key={service.id} {...service} />
+                      ))
+                    ) : (
+                      <p className="text-muted-foreground italic">
+                        No services provided
+                      </p>
+                    )}
+                    {isEditing && (
+                      <Dialog
+                        open={isServiceModalOpen}
+                        onOpenChange={closeServiceModal}
+                      >
+                        <Card
+                          className="w-[270px] pointer flex items-center justify-center"
+                          onClick={openServiceModal}
+                        >
+                          <div className="flex gap-1">
+                            <Plus size={24} />
+                            <h2 className="text-xl font-bold">
+                              Add New Service
+                            </h2>
+                          </div>
+                        </Card>
+                        <NewServiceModal
+                          onClose={closeServiceModal}
+                          addNewService={append}
+                        />
+                      </Dialog>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </form>
+    </Form>
   );
 }
