@@ -56,7 +56,7 @@ model BusinessDetails {
   address      String
   phone        String
   workingHours WorkingHours[] @relation("business_working_hours")
-  description  String
+  description  String?
   services     Service[] @relation("business_services")
   appointments Appointment[] @relation("business_appointments")
 

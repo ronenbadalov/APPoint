@@ -12,7 +12,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { reloadSession } from "@/lib/auth";
 import { defaultPaths } from "@/lib/paths";
-import { newUserHandle } from "@/mutations/newUserHandle";
+import { newUserHandle } from "@/mutations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Role } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";

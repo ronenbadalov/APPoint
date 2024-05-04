@@ -1,9 +1,14 @@
 "use client";
 
+import { FormServiceInput } from "@/app/(business)/my-business/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Service } from "@prisma/client";
 import { CircleDollarSign, Hourglass } from "lucide-react";
-export const ServiceCard = ({ name, price, duration }: Service) => {
+export const ServiceCard = ({
+  name,
+  price,
+  duration,
+  description,
+}: FormServiceInput) => {
   return (
     <Card className="w-[270px]">
       <CardHeader>

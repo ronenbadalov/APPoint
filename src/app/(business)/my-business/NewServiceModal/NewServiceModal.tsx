@@ -12,48 +12,18 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, UseFieldArrayAppend, useForm } from "react-hook-form";
-import { z } from "zod";
-import { serviceObj as FormSchema, MyBusinessFormData } from "../page";
+import { useFormContext } from "react-hook-form";
+import { ServiceModalFormData } from "../page";
 
 interface NewServiceModalProps {
-  onClose: () => void;
-  addNewService: UseFieldArrayAppend<MyBusinessFormData, "services">;
+  onSubmit: (data: ServiceModalFormData) => Promise<void>;
 }
 
-interface Service {
-  name: string;
-  price: number;
-  duration: number;
-  description?: string;
-}
-
-type FormData = z.infer<typeof FormSchema>;
-
-export const NewServiceModal = ({
-  onClose,
-  addNewService,
-}: NewServiceModalProps) => {
-  const form = useForm<Service>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      duration: 0,
-      price: 0,
-    },
-  });
-
-  const onSubmit = async (data: FormData) => {
-    try {
-      addNewService(data);
-      onClose();
-    } catch (error: any) {}
-  };
-
+export const NewServiceModal = ({ onSubmit }: NewServiceModalProps) => {
+  const { control, handleSubmit } = useFormContext<ServiceModalFormData>();
   return (
     <DialogContent className="sm:max-w-md">
       <DialogHeader>
@@ -62,65 +32,90 @@ export const NewServiceModal = ({
           create a service for your business
         </DialogDescription>
       </DialogHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Service Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Service Name" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Price</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="Price" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="duration"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Duration</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="Duration" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Input placeholder="Description" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </form>
-      </Form>
+      <div className="space-y-4">
+        <FormField
+          control={control}
+          name="name"
+          render={({ field, formState: { errors } }) => (
+            <FormItem>
+              <FormLabel>Service Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Service Name" {...field} />
+              </FormControl>
+              {errors.name && <FormMessage>{errors.name.message}</FormMessage>}
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Input placeholder="Description" {...field} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="price"
+          render={({ field, formState: { errors } }) => (
+            <FormItem>
+              <FormLabel>Price</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="Price"
+                  {...field}
+                  onChange={(e) => {
+                    e.preventDefault();
+                    if (isNaN(e.target.valueAsNumber)) {
+                      field.onChange(0);
+                      return;
+                    }
+                    field.onChange(e.target.valueAsNumber);
+                  }}
+                />
+              </FormControl>
+              {errors.price && (
+                <FormMessage>{errors.price.message}</FormMessage>
+              )}
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="duration"
+          render={({ field, formState: { errors } }) => (
+            <FormItem>
+              <FormLabel>Duration (minutes)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="Duration"
+                  {...field}
+                  onChange={(e) => {
+                    e.preventDefault();
+                    field.onChange(e.target.valueAsNumber);
+                  }}
+                />
+              </FormControl>
+              {errors.duration && (
+                <FormMessage>{errors.duration.message}</FormMessage>
+              )}
+            </FormItem>
+          )}
+        />
+      </div>
       <DialogFooter>
         <DialogClose asChild>
           <Button type="button" variant="secondary">
             Close
           </Button>
         </DialogClose>
-        <Button type="submit" onClick={form.handleSubmit(onSubmit)}>
+        <Button type="button" onClick={handleSubmit(onSubmit)}>
           Create
         </Button>
       </DialogFooter>
