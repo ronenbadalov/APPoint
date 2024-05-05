@@ -1,6 +1,7 @@
-import { handleNewUserDetails, hashPassword, verifyPassword } from "@/lib/auth";
+import { hashPassword, verifyPassword } from "@/lib/auth";
 import { paths } from "@/lib/paths";
 import prisma from "@/lib/prisma";
+import { UserService } from "@/services/userService";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { Role, User } from "@prisma/client";
 import { NextAuthOptions } from "next-auth";
@@ -100,7 +101,7 @@ export const options: NextAuthOptions = {
           },
         });
 
-        await handleNewUserDetails(newUser);
+        await UserService.handleNewUserDetails(newUser);
 
         return newUser;
       },
