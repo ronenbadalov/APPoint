@@ -25,7 +25,7 @@ import { EditIcon, LoaderCircle, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
-import { NewServiceModal } from "./NewServiceModal";
+import { ServiceModal } from "./ServiceModal";
 import { TimePicker } from "./TimePicker";
 
 export const serviceObj = z.object({
@@ -39,6 +39,7 @@ export const serviceObj = z.object({
     message: "Duration must be greater than 0.",
   }),
   description: z.string().optional(),
+  serviceId: z.string().optional(),
 });
 
 const FormSchema = z.object({
@@ -81,6 +82,13 @@ const days = [
   "Saturday",
 ];
 
+const serviceDefaultValues: ServiceModalFormData = {
+  name: "",
+  description: "",
+  duration: 0,
+  price: 0,
+};
+
 export default function MyBusinessPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
@@ -92,7 +100,7 @@ export default function MyBusinessPage() {
     queryKey: ["my-business"],
     queryFn: getMyBusiness,
   });
-  const { mutate: updateMyBusinessMutation } = useMutation({
+  const { mutate: updateMyBusinessMutation, isPending } = useMutation({
     mutationFn: updateMyBusiness,
     onSuccess: () => {
       refetch();
@@ -120,13 +128,22 @@ export default function MyBusinessPage() {
     replace,
     append,
     remove,
+    update,
   } = useFieldArray({
     control: form.control,
     name: "services",
   });
   const onSubmit = async (data: MyBusinessFormData) => {
     try {
-      await updateMyBusinessMutation(data);
+      const dataWithServicesId: MyBusinessFormData = {
+        ...data,
+        services: data.services?.map((s) => ({
+          ...s,
+          id: s.serviceId,
+          serviceId: undefined,
+        })),
+      };
+      await updateMyBusinessMutation(dataWithServicesId);
       setIsEditing(false);
     } catch (error: any) {}
   };
@@ -134,26 +151,29 @@ export default function MyBusinessPage() {
   // service modal form
   const serviceModalForm = useForm<ServiceModalFormData>({
     resolver: zodResolver(serviceObj),
-    defaultValues: {
-      name: "",
-      description: "",
-      duration: 0,
-      price: 0,
-    },
+    defaultValues: serviceDefaultValues,
   });
 
   const openServiceModal = () => {
+    serviceModalForm.reset(serviceDefaultValues);
     setIsServiceModalOpen(true);
   };
 
   const closeServiceModal = () => {
     setIsServiceModalOpen(false);
+    serviceModalForm.reset(serviceDefaultValues);
   };
 
   const onSubmitServiceModal = async (data: ServiceModalFormData) => {
     try {
-      append(data);
-      serviceModalForm.reset();
+      if (data.serviceId) {
+        const index = servicesFields.findIndex(
+          (service) => service.serviceId === data.serviceId
+        );
+        update(index, data);
+      } else {
+        append(data);
+      }
       closeServiceModal();
     } catch (error: any) {}
   };
@@ -183,16 +203,18 @@ export default function MyBusinessPage() {
     );
     form.setValue("description", businessData.description);
     replace(
-      businessData.services.map(({ duration, description, name, price }) => ({
-        duration,
-        description,
-        name,
-        price,
-      }))
+      businessData.services.map(
+        ({ duration, description, name, price, id }) => ({
+          duration,
+          description,
+          name,
+          price,
+          serviceId: id,
+        })
+      )
     );
   }, [businessData, isEditing, form, replace]);
-
-  return isLoading ? (
+  return isLoading || isPending ? (
     <div className=" flex justify-center items-center mt-64">
       <LoaderCircle className="animate-spin" size={32} />
     </div>
@@ -481,33 +503,32 @@ export default function MyBusinessPage() {
                 </tr>
               </tbody>
             </table>
+            {isEditing && (
+              <div className="w-full flex justify-end gap-3 mt-3">
+                <Button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  variant="secondary"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    form.handleSubmit(onSubmit)();
+                  }}
+                >
+                  Save
+                </Button>
+              </div>
+            )}
           </div>
-          {isEditing && (
-            <div className="fixed bottom-5 right-48 flex gap-3">
-              <Button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                variant="secondary"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                onClick={() => {
-                  console.log("click");
-                  form.handleSubmit(onSubmit)();
-                }}
-              >
-                Save
-              </Button>
-            </div>
-          )}
         </form>
       </Form>
       <Dialog open={isServiceModalOpen} onOpenChange={closeServiceModal}>
         <Form {...serviceModalForm}>
           <form>
-            <NewServiceModal onSubmit={onSubmitServiceModal} />
+            <ServiceModal onSubmit={onSubmitServiceModal} />
           </form>
         </Form>
       </Dialog>

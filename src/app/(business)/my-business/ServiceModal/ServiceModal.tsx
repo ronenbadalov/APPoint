@@ -18,18 +18,24 @@ import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
 import { ServiceModalFormData } from "../page";
 
-interface NewServiceModalProps {
+interface ServiceModalProps {
   onSubmit: (data: ServiceModalFormData) => Promise<void>;
 }
 
-export const NewServiceModal = ({ onSubmit }: NewServiceModalProps) => {
-  const { control, handleSubmit } = useFormContext<ServiceModalFormData>();
+export const ServiceModal = ({ onSubmit }: ServiceModalProps) => {
+  const { watch, control, handleSubmit } =
+    useFormContext<ServiceModalFormData>();
+  const id = watch("serviceId");
   return (
     <DialogContent className="sm:max-w-md">
       <DialogHeader>
-        <DialogTitle>Create a Service</DialogTitle>
+        <DialogTitle>
+          {id ? "Update a Service" : "Create a Service"}
+        </DialogTitle>
         <DialogDescription>
-          create a service for your business
+          {id
+            ? "update a service for your business"
+            : "create a service for your business"}
         </DialogDescription>
       </DialogHeader>
       <div className="space-y-4">
@@ -116,7 +122,7 @@ export const NewServiceModal = ({ onSubmit }: NewServiceModalProps) => {
           </Button>
         </DialogClose>
         <Button type="button" onClick={handleSubmit(onSubmit)}>
-          Create
+          {id ? "Update" : "Create"}
         </Button>
       </DialogFooter>
     </DialogContent>
