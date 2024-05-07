@@ -59,6 +59,7 @@ model BusinessDetails {
   description  String?
   services     Service[] @relation("business_services")
   appointments Appointment[] @relation("business_appointments")
+  imageUrl     String? @map("image_url")
 
   @@map("business_details")
 }

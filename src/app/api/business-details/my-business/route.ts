@@ -1,8 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { options } from "../../auth/[...nextauth]/options";
-
 export async function GET(req: any) {
   try {
     const session = await getServerSession(options);
@@ -11,6 +10,7 @@ export async function GET(req: any) {
         status: 401,
       });
     }
+
     let businessDetails = await prisma.businessDetails.findFirst({
       where: {
         userId: session.user.id,
@@ -38,7 +38,7 @@ export async function GET(req: any) {
   }
 }
 
-export async function PATCH(req: NextRequest) {
+export async function PATCH(req: Request) {
   try {
     const { workingHours, services, ...rest } = await req.json();
     const session = await getServerSession(options);
@@ -46,6 +46,7 @@ export async function PATCH(req: NextRequest) {
       return new NextResponse(JSON.stringify({ error: "not authenticated" }), {
         status: 401,
       });
+
     const updatedBusinessDetails = await prisma.businessDetails.update({
       where: { userId: session.user.id },
       data: rest,

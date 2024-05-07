@@ -1,6 +1,9 @@
 import prisma from "@/lib/prisma";
 import { Role, User } from "@prisma/client";
 
+const defaultBusinessImageUrl =
+  "https://qfublamrbi3ixpha.public.blob.vercel-storage.com/business-default-image-jstFim9EGANHoxwMbXHqLIO7Z9DpXU.png";
+
 export const UserService = {
   handleNewUserDetails: async (newUser: User) => {
     if (newUser.role === Role.BUSINESS) {
@@ -11,6 +14,7 @@ export const UserService = {
           businessName: `${newUser.name}'s Business`,
           description: "",
           phone: "",
+          imageUrl: defaultBusinessImageUrl,
         },
       });
 

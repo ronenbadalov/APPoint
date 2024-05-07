@@ -22,7 +22,8 @@ import { BusinessDetails, Service, WorkingHours } from "@prisma/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { EditIcon, LoaderCircle, Plus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import { ServiceModal } from "./ServiceModal";
@@ -62,6 +63,7 @@ const FormSchema = z.object({
   ),
   description: z.string().nullable(),
   services: z.array(serviceObj),
+  imageUrl: z.any().optional(),
 });
 
 export type ServiceModalFormData = z.infer<typeof serviceObj>;
@@ -92,6 +94,7 @@ const serviceDefaultValues: ServiceModalFormData = {
 export default function MyBusinessPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const ref = useRef<HTMLInputElement>(null);
   const {
     data: response,
     isLoading,
@@ -104,6 +107,7 @@ export default function MyBusinessPage() {
     mutationFn: updateMyBusiness,
     onSuccess: () => {
       refetch();
+      form.reset();
     },
   });
 
@@ -122,7 +126,8 @@ export default function MyBusinessPage() {
   });
 
   const workingHours = form.watch("workingHours");
-
+  const imageFile = form.watch("imageUrl");
+  // const imageUrl = imageFile ? URL.createObjectURL(imageFile) : undefined;
   const {
     fields: servicesFields,
     replace,
@@ -186,7 +191,6 @@ export default function MyBusinessPage() {
   const onServiceDelete = (index: number) => {
     remove(index);
   };
-
   useEffect(() => {
     if (!businessData || !isEditing) return;
     form.setValue("businessName", businessData.businessName);
@@ -214,6 +218,17 @@ export default function MyBusinessPage() {
       )
     );
   }, [businessData, isEditing, form, replace]);
+
+  const [imageSrc, setImageSrc] = useState<string | undefined>(); // initial src will be empty
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImageSrc(undefined);
+      return;
+    }
+    const imageUrl = imageFile ? URL.createObjectURL(imageFile) : undefined;
+    if (imageUrl) setImageSrc(imageUrl);
+  }, [imageFile]);
   return isLoading || isPending ? (
     <div className=" flex justify-center items-center mt-64">
       <LoaderCircle className="animate-spin" size={32} />
@@ -225,8 +240,58 @@ export default function MyBusinessPage() {
           <div className="py-5 flex flex-col max-w-screen-lg m-auto">
             <div className="flex w-full items-center gap-5">
               <div className="flex gap-5 items-center w-full">
-                <div className="rounded-full bg-gray-200 w-28 h-28 flex justify-center items-center">
-                  {/* <img src={businessData?.logo} alt="logo" /> */}
+                <div className="w-28 h-28 rounded-full relative border-2 border-primary">
+                  {(imageSrc || businessData?.imageUrl) && (
+                    <Image
+                      src={imageSrc || businessData?.imageUrl || ""}
+                      alt="logo"
+                      className="object-cover rounded-full w-28 h-28"
+                      width={224}
+                      height={224}
+                    />
+                  )}
+                  {isEditing && (
+                    <div className="absolute right-0 bottom-0">
+                      <FormField
+                        control={form.control}
+                        name="imageUrl"
+                        render={({
+                          field: { value, onChange, ...fieldProps },
+                        }) => (
+                          <FormItem>
+                            <FormControl>
+                              <>
+                                <input
+                                  // @ts-ignore
+                                  type="file"
+                                  {...fieldProps}
+                                  hidden
+                                  ref={ref}
+                                  onChange={async (e) => {
+                                    if (!e.target.files || !e.target.files[0])
+                                      return;
+                                    onChange(e.target.files[0]);
+                                    if (ref.current) {
+                                      ref.current.value = "";
+                                    }
+                                  }}
+                                  accept="image/*"
+                                />
+                                <Button
+                                  variant="outline"
+                                  type="button"
+                                  onClick={() => ref.current?.click()}
+                                >
+                                  <EditIcon size={14} />
+                                </Button>
+                              </>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
                 </div>
                 {isEditing ? (
                   <FormField
