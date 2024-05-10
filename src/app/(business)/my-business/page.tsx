@@ -18,12 +18,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { updateMyBusiness } from "@/mutations";
 import { getMyBusiness } from "@/queries";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BusinessDetails, Service, WorkingHours } from "@prisma/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { EditIcon, LoaderCircle, Plus } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import { ServiceModal } from "./ServiceModal";
@@ -70,10 +69,6 @@ export type ServiceModalFormData = z.infer<typeof serviceObj>;
 
 export type MyBusinessFormData = z.infer<typeof FormSchema>;
 
-type BusinessData =
-  | (BusinessDetails & { workingHours: WorkingHours[]; services: Service[] })
-  | undefined;
-
 const days = [
   "Sunday",
   "Monday",
@@ -96,7 +91,7 @@ export default function MyBusinessPage() {
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
   const {
-    data: response,
+    data: businessData,
     isLoading,
     refetch,
   } = useQuery({
@@ -110,8 +105,6 @@ export default function MyBusinessPage() {
       form.reset();
     },
   });
-
-  const businessData: BusinessData = useMemo(() => response?.data, [response]);
 
   const form = useForm<MyBusinessFormData>({
     resolver: zodResolver(FormSchema),
@@ -127,7 +120,6 @@ export default function MyBusinessPage() {
 
   const workingHours = form.watch("workingHours");
   const imageFile = form.watch("imageUrl");
-  // const imageUrl = imageFile ? URL.createObjectURL(imageFile) : undefined;
   const {
     fields: servicesFields,
     replace,
