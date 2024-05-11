@@ -9,7 +9,6 @@ import Link from "next/link";
 import { useCallback, useMemo, useRef } from "react";
 
 // RONEN-TOOD: add search bar - search by name/address
-// RONEN-TOOD: add google maps integration in business page + link to google maps & waze
 export default function ExplorePage() {
   const observer = useRef<IntersectionObserver>();
 
