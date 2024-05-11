@@ -10,7 +10,6 @@ export async function GET(
   { params: { id } }: { params: Slug }
 ) {
   try {
-    console.log(id);
     let businessDetails = await prisma.businessDetails.findFirst({
       where: {
         id,
