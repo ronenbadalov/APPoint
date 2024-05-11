@@ -5,7 +5,10 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const clientLinks = [{ title: "Explore", href: paths.EXPLORE }];
+const clientLinks = [
+  { title: "Explore", href: paths.EXPLORE },
+  { title: "My profile", href: paths.MY_PROFILE },
+];
 
 const businessLinks = [
   { title: "My Business", href: paths.MY_BUSINESS },

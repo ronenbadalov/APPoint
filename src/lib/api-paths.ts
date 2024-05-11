@@ -4,4 +4,5 @@ export const apiPaths = {
   BUSINESS_DETAILS_MY_BUSINESS: "api/business-details/my-business",
   BUSINESS_DETAILS_MY_BUSINESS_FILE_UPLOAD:
     "api/business-details/my-business/file-upload",
+  BUSINESSES_DETAILS: "api/business-details",
 };

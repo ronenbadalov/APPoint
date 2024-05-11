@@ -1,9 +1,9 @@
+import { options } from "@/app/api/auth/[...nextauth]/options";
 import { defaultPaths } from "@/lib/paths";
 import { ChildrenProps } from "@/types";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { options } from "../api/auth/[...nextauth]/options";
 
 export default async function Layout({ children }: ChildrenProps) {
   const session = await getServerSession(options);
