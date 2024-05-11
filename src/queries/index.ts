@@ -1,2 +1,2 @@
 export * from "./getBusinesses";
-export * from "./getMyBusiness";
+export * from "./getMyAppointments";
