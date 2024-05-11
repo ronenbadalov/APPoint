@@ -21,11 +21,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Role } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
+import "leaflet-defaulticon-compatibility";
+import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
+import { OpenStreetMapProvider } from "leaflet-geosearch";
+import "leaflet/dist/leaflet.css";
+import { debounce } from "lodash";
 import { EditIcon, LoaderCircle, Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import * as z from "zod";
 import { ServiceModal } from "./ServiceModal";
 import { TimePicker } from "./TimePicker";
@@ -105,8 +112,8 @@ export const BusinessPage = ({
     session?.user?.id === businessData?.userId;
   const [isEditing, setIsEditing] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [position, setPostion] = useState<[number, number]>(); // [latitude,longitude
   const ref = useRef<HTMLInputElement>(null);
-
   const { mutate: updateMyBusinessMutation, isPending } = useMutation({
     mutationFn: updateMyBusiness,
     onSuccess: () => {
@@ -126,6 +133,15 @@ export const BusinessPage = ({
       services: [],
     },
   });
+
+  const provider = useMemo(() => new OpenStreetMapProvider(), []);
+  const debouncedFetchData = useCallback(
+    debounce(async (q: string) => {
+      const data = await provider.search({ query: q });
+      if (data[0]) setPostion([data[0].y, data[0].x]);
+    }, 300),
+    [provider]
+  );
 
   const workingHours = form.watch("workingHours");
   const imageFile = form.watch("imageUrl");
@@ -230,6 +246,11 @@ export const BusinessPage = ({
     const imageUrl = imageFile ? URL.createObjectURL(imageFile) : undefined;
     if (imageUrl) setImageSrc(imageUrl);
   }, [imageFile]);
+
+  useEffect(() => {
+    businessData?.address && debouncedFetchData(businessData.address);
+  }, [businessData?.address, debouncedFetchData]);
+
   return isLoading || isPending ? (
     <div className=" flex justify-center items-center mt-64">
       <LoaderCircle className="animate-spin" size={32} />
@@ -238,7 +259,7 @@ export const BusinessPage = ({
     <div>
       <Form {...form}>
         <form className="space-y-4">
-          <div className="py-5 flex flex-col max-w-screen-lg m-auto">
+          <div className="py-5 flex flex-col max-w-screen-lg m-auto gap-5">
             <div className="flex w-full items-center gap-5">
               <div className="flex gap-5 items-center w-full">
                 <div className="w-28 h-28 rounded-full relative border-2 border-primary">
@@ -380,7 +401,13 @@ export const BusinessPage = ({
                         render={({ field, formState: { errors } }) => (
                           <FormItem>
                             <FormControl>
-                              <Input {...field} />
+                              <Input
+                                {...field}
+                                onChange={(e) => {
+                                  debouncedFetchData(e.target.value);
+                                  field.onChange(e);
+                                }}
+                              />
                             </FormControl>
                             {errors.address && (
                               <FormMessage>
@@ -391,7 +418,31 @@ export const BusinessPage = ({
                         )}
                       />
                     ) : businessData?.address ? (
-                      <p className="">{businessData.address}</p>
+                      <div className="flex gap-2">
+                        <p>{businessData.address}</p>
+                        <Link
+                          href={`https://www.google.com/maps?saddr=My+Location&daddr=${businessData.address}`}
+                          target="_blank"
+                          passHref
+                        >
+                          <img
+                            src="/static/google-maps.png"
+                            alt="google-maps"
+                            className="w-6 h-6 cursor-pointer"
+                          />
+                        </Link>
+                        <Link
+                          href={`https://www.waze.com/ul?ll=${position?.[0]},${position?.[1]}&navigate=yes`}
+                          passHref
+                          target="_blank"
+                        >
+                          <img
+                            src="/static/waze.svg"
+                            alt="waze"
+                            className="w-6 h-6 cursor-pointer"
+                          />
+                        </Link>
+                      </div>
                     ) : (
                       <p className="text-muted-foreground italic">
                         No address provided
@@ -586,6 +637,19 @@ export const BusinessPage = ({
                   Save
                 </Button>
               </div>
+            )}
+            {position && (
+              <MapContainer
+                // @ts-ignore
+                center={position}
+                zoom={18}
+                minZoom={10}
+                style={{ height: "400px", width: "100%" }}
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+                <Marker position={position} />
+              </MapContainer>
             )}
           </div>
         </form>
