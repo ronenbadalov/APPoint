@@ -13,3 +13,8 @@ export async function verifyPassword(
   const isMatch = await bcrypt.compare(password, hash);
   return isMatch;
 }
+
+export const reloadSession = () => {
+  const event = new Event("visibilitychange");
+  document.dispatchEvent(event);
+};
