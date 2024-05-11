@@ -32,7 +32,9 @@ export default async function RootLayout({ children }: ChildrenProps) {
             disableTransitionOnChange
           >
             <Header />
-            <div className="container relative" id="root">{children}</div>
+            <div className="container relative px-4" id="root">
+              {children}
+            </div>
             <Toaster />
           </ThemeProvider>
         </Providers>
