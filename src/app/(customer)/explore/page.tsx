@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useCallback, useMemo, useRef } from "react";
 
 // RONEN-TOOD: add search bar - search by name/address
+// RONEN-TOOD: add google maps integration in business page + link to google maps & waze
 export default function ExplorePage() {
   const observer = useRef<IntersectionObserver>();
 
@@ -79,11 +80,23 @@ export default function ExplorePage() {
                   </h1>
                   <div className="flex gap-2 items-center">
                     <MapPin size={16} />
-                    <p className="text-sm">{business.address}</p>
+                    {business.address ? (
+                      <p className="text-sm">{business.address}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No address provided
+                      </p>
+                    )}
                   </div>
-                  <p className="line-clamp-3 text-xs text-muted-foreground">
-                    {business.description}
-                  </p>
+                  {business.description ? (
+                    <p className="line-clamp-3 text-xs text-muted-foreground">
+                      {business.description}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      No description provided
+                    </p>
+                  )}
                 </div>
               </Card>
             </Link>
