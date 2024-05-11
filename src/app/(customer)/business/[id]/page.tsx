@@ -1,6 +1,6 @@
 "use client";
 import { BusinessPage } from "@/components/BusinessPage";
-import { getBusiness } from "@/queries/getBusiness";
+import { getBusiness } from "@/queries";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Page({ params }: { params: { id: string } }) {

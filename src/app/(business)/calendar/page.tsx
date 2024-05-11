@@ -5,7 +5,7 @@ import { EditAppointmentFormData } from "@/components/calendar/form/edit-appoint
 import { EditAppointmentModal } from "@/components/calendar/modals/edit-appointment-modal";
 import { Appointment, Service } from "@/components/calendar/types";
 import WeeklyCalendar from "@/components/calendar/weekly-calendar";
-import { updateAppointment } from "@/mutations/updateAppointment";
+import { updateAppointment } from "@/mutations";
 import { getAppointments } from "@/queries";
 import { AppointmentStatus } from "@prisma/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
