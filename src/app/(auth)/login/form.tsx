@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { paths } from "@/lib/paths";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -33,7 +33,6 @@ const FormSchema = z.object({
 type FormData = z.infer<typeof FormSchema>;
 
 export default function LoginForm() {
-  const { data: session } = useSession();
   const router = useRouter();
   const { toast } = useToast();
 

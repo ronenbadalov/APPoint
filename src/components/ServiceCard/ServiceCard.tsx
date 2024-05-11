@@ -1,7 +1,7 @@
 "use client";
-import { ServiceModalFormData } from "@/app/(business)/my-business/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CircleDollarSign, EditIcon, Hourglass, Trash } from "lucide-react";
+import { ServiceModalFormData } from "../BusinessPage";
 import { Button } from "../ui/button";
 
 interface ServiceCardProps extends ServiceModalFormData {
