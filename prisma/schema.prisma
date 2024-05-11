@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,124 +7,109 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-enum Role{
-  CUSTOMER
-  BUSINESS
-}
-
-
 model User {
-  id                    String     @id @default(uuid())
-  name                  String
-  email                 String?    @unique
-  emailVerified         DateTime?   @map("email_verified")
-  image                 String?
-  password              String?    @map("password")
-  createdAt             DateTime   @default(now())
-  updatedAt             DateTime   @updatedAt
-  accounts              Account[]
-  sessions              Session[]
-  role                  Role?
-
-  customerDetails CustomerDetails?
+  id              String           @id @default(uuid())
+  name            String
+  email           String?          @unique
+  emailVerified   DateTime?        @map("email_verified")
+  image           String?
+  password        String?          @map("password")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  role            Role?
+  accounts        Account[]
   businessDetails BusinessDetails?
+  customerDetails CustomerDetails?
+  sessions        Session[]
 
   @@map("users")
 }
 
 model CustomerDetails {
-  id           String   @id @default(uuid())
-  user         User     @relation(fields: [userId], references: [id],onDelete: Cascade)
-  userId       String  @map("user_id") @unique
-  appointments  Appointment[] @relation("customer_appointments")
+  id           String        @id @default(uuid())
+  userId       String        @unique @map("user_id")
+  appointments Appointment[] @relation("customer_appointments")
+  user         User          @relation(fields: [userId], references: [id])
 
   @@map("customer_details")
 }
 
 model BusinessDetails {
-  id           String   @id @default(uuid())
-  user         User     @relation(fields : [userId], references: [id],onDelete: Cascade)
-  userId       String @map("user_id") @unique
-  businessName String @map("business_name")
+  id           String         @id @default(uuid())
+  userId       String         @unique @map("user_id")
+  businessName String         @map("business_name")
   address      String
   phone        String
-  workingHours WorkingHours[] @relation("business_working_hours")
-  description  String?
-  services     Service[] @relation("business_services")
-  appointments Appointment[] @relation("business_appointments")
   imageUrl     String? @map("image_url")
+  description  String?
+  appointments Appointment[]  @relation("business_appointments")
+  user         User           @relation(fields: [userId], references: [id])
+  services     Service[]      @relation("business_services")
+  workingHours WorkingHours[] @relation("business_working_hours")
 
   @@map("business_details")
 }
 
 model Service {
-  id           String   @id @default(uuid())
-  business     BusinessDetails @relation("business_services", fields: [businessId], references: [id], onDelete: Cascade)
-  businessId   String @map("business_id")
+  id           String          @id @default(uuid())
+  businessId   String          @map("business_id")
   name         String
   description  String
   price        Float
   duration     Int
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  appointments Appointment[] @relation("service_appointments")
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  appointments Appointment[]   @relation("service_appointments")
+  business     BusinessDetails @relation("business_services", fields: [businessId], references: [id], onDelete: Cascade)
 
   @@map("services")
 }
 
-enum AppointmentStatus{
-  PENDING_BUSINESS
-  PENDING_CUSTOMER
-  CONFIRMED
-  CANCELLED
-}
-
 model Appointment {
-  id           String   @id @default(uuid())
-  customer     CustomerDetails @relation("customer_appointments", fields: [customerId], references: [id], onDelete: Cascade)
-  customerId   String @map("customer_id")
-  business     BusinessDetails @relation("business_appointments", fields: [businessId], references: [id], onDelete: Cascade)
-  businessId   String @map("business_id")
-  service      Service @relation("service_appointments", fields: [serviceId], references: [id] ) 
-  serviceId    String @map("service_id")
-  date         DateTime
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  status       AppointmentStatus
+  id         String            @id @default(uuid())
+  customerId String            @map("customer_id")
+  businessId String            @map("business_id")
+  serviceId  String            @map("service_id")
+  date       DateTime
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  status     AppointmentStatus
+  business   BusinessDetails   @relation("business_appointments", fields: [businessId], references: [id], onDelete: Cascade)
+  customer   CustomerDetails   @relation("customer_appointments", fields: [customerId], references: [id], onDelete: Cascade)
+  service    Service           @relation("service_appointments", fields: [serviceId], references: [id])
 
   @@map("appointments")
 }
 
 model WorkingHours {
-  id           String   @id @default(uuid())
-  business     BusinessDetails @relation("business_working_hours",fields: [businessId], references: [id],onDelete: Cascade)
-  businessId   String @map("business_id")
-  day          Int
-  startTime    DateTime? @map("start_time")
-  endTime      DateTime? @map("end_time")
-  isClosed     Boolean? @map("is_closed")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id         String          @id @default(uuid())
+  businessId String          @map("business_id")
+  day        Int
+  startTime  DateTime?       @map("start_time")
+  endTime    DateTime?       @map("end_time")
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  isClosed   Boolean?        @map("is_closed")
+  business   BusinessDetails @relation("business_working_hours", fields: [businessId], references: [id], onDelete: Cascade)
 
   @@map("working_hours")
 }
 
 model Account {
-  id                 String    @id @default(cuid())
-  userId              String    @map("user_id")
-  type                 String?
-  provider           String
-  providerAccountId  String    @map("provider_account_id")
-  token_type         String?
-  refresh_token      String?   @db.Text
-  access_token       String?   @db.Text
-  expires_at         Int?
-  scope              String?
-  id_token           String? @db.Text
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String   @id @default(cuid())
+  userId            String   @map("user_id")
+  type              String?
+  provider          String
+  providerAccountId String   @map("provider_account_id")
+  token_type        String?
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  scope             String?
+  id_token          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -139,12 +118,12 @@ model Account {
 model Session {
   id           String   @id @default(cuid())
   userId       String?  @map("user_id")
-  sessionToken String   @db.Text @map("session_token") @unique
-  accessToken  String?  @db.Text @map("access_token")
+  sessionToken String   @unique @map("session_token")
+  accessToken  String?  @map("access_token")
   expires      DateTime
-  user         User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
@@ -158,4 +137,16 @@ model VerificationRequest {
   updatedAt  DateTime @updatedAt
 
   @@unique([identifier, token])
+}
+
+enum Role {
+  CUSTOMER
+  BUSINESS
+}
+
+enum AppointmentStatus {
+  PENDING_BUSINESS
+  PENDING_CUSTOMER
+  CONFIRMED
+  CANCELLED
 }
