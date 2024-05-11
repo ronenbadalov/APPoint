@@ -8,6 +8,7 @@ import { LoaderCircle, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useRef } from "react";
 
+// RONEN-TOOD: add search bar - search by name/address
 export default function ExplorePage() {
   const observer = useRef<IntersectionObserver>();
 
@@ -61,7 +62,7 @@ export default function ExplorePage() {
               <Card
                 ref={lastElementRef}
                 key={business.id}
-                className="relative overflow-hidden rounded-xl shadow-lg transition-transform transform hover:scale-105 cursor-pointer"
+                className="relative overflow-hidden rounded-xl shadow-lg transition-transform transform hover:scale-105 cursor-pointer h-full"
               >
                 {business.imageUrl && (
                   <img
@@ -87,7 +88,11 @@ export default function ExplorePage() {
               </Card>
             </Link>
           ))}
-          {isFetching && <div>Fetching more data...</div>}
+        </div>
+      )}
+      {!isLoading && isFetching && (
+        <div className=" flex justify-center items-center mt-7">
+          <LoaderCircle className="animate-spin" size={32} />
         </div>
       )}
     </div>

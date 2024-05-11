@@ -1,7 +1,7 @@
 import { apiPaths } from "@/lib/api-paths";
 import { BusinessDetails, Service, WorkingHours } from "@prisma/client";
 import axios from "axios";
-type BusinessData =
+export type BusinessData =
   | (BusinessDetails & { workingHours: WorkingHours[]; services: Service[] })
   | undefined;
 
