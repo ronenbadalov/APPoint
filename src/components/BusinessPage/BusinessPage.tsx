@@ -72,6 +72,8 @@ const FormSchema = z.object({
   description: z.string().nullable(),
   services: z.array(serviceObj),
   imageUrl: z.any().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 
 export type ServiceModalFormData = z.infer<typeof serviceObj>;
@@ -112,7 +114,6 @@ export const BusinessPage = ({
     session?.user?.id === businessData?.userId;
   const [isEditing, setIsEditing] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
-  const [position, setPostion] = useState<[number, number]>(); // [latitude,longitude
   const ref = useRef<HTMLInputElement>(null);
   const { mutate: updateMyBusinessMutation, isPending } = useMutation({
     mutationFn: updateMyBusiness,
@@ -138,7 +139,10 @@ export const BusinessPage = ({
   const debouncedFetchData = useCallback(
     debounce(async (q: string) => {
       const data = await provider.search({ query: q });
-      if (data[0]) setPostion([data[0].y, data[0].x]);
+      if (data[0]) {
+        form.setValue("longitude", data[0].x);
+        form.setValue("latitude", data[0].y);
+      }
     }, 300),
     [provider]
   );
@@ -246,10 +250,6 @@ export const BusinessPage = ({
     const imageUrl = imageFile ? URL.createObjectURL(imageFile) : undefined;
     if (imageUrl) setImageSrc(imageUrl);
   }, [imageFile]);
-
-  useEffect(() => {
-    businessData?.address && debouncedFetchData(businessData.address);
-  }, [businessData?.address, debouncedFetchData]);
 
   return isLoading || isPending ? (
     <div className=" flex justify-center items-center mt-64">
@@ -432,7 +432,7 @@ export const BusinessPage = ({
                           />
                         </Link>
                         <Link
-                          href={`https://www.waze.com/ul?ll=${position?.[0]},${position?.[1]}&navigate=yes`}
+                          href={`https://www.waze.com/ul?ll=${businessData.latitude},${businessData.longitude}&navigate=yes`}
                           passHref
                           target="_blank"
                         >
@@ -638,16 +638,18 @@ export const BusinessPage = ({
                 </Button>
               </div>
             )}
-            {position && (
+            {businessData?.latitude && businessData?.longitude && (
               <MapContainer
-                center={position}
+                center={[businessData.latitude, businessData.longitude]}
                 zoom={18}
                 minZoom={10}
                 style={{ height: "400px", width: "100%" }}
               >
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-                <Marker position={position} />
+                <Marker
+                  position={[businessData.latitude, businessData.longitude]}
+                />
               </MapContainer>
             )}
           </div>
