@@ -7,7 +7,8 @@ export const paths = {
   MY_BUSINESS: "/my-business",
   CALENDAR: "/calendar",
   EXPLORE: "/explore",
-  MY_APPOINTMENTS: "/my-appointments",
+  MY_PROFILE: "/my-profile",
+  BUSINESS: "/business",
 };
 
 export const defaultPaths = {
