@@ -58,10 +58,9 @@ export default function ExplorePage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {businesses.map((business: Business) => (
-            <Link href={`${paths.BUSINESS}/${business.id}`}>
+            <Link key={business.id} href={`${paths.BUSINESS}/${business.id}`}>
               <Card
                 ref={lastElementRef}
-                key={business.id}
                 className="relative overflow-hidden rounded-xl shadow-lg transition-transform transform hover:scale-105 cursor-pointer h-full"
               >
                 {business.imageUrl && (

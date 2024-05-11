@@ -640,7 +640,6 @@ export const BusinessPage = ({
             )}
             {position && (
               <MapContainer
-                // @ts-ignore
                 center={position}
                 zoom={18}
                 minZoom={10}
