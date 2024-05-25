@@ -42,6 +42,9 @@ export default function Page({ params }: { params: { id: string } }) {
         queryKey: ["business-details", params.id],
       });
       setIsOpen(false);
+      queryClient.invalidateQueries({
+        queryKey: ["appointments"],
+      });
     },
   });
 
@@ -55,6 +58,9 @@ export default function Page({ params }: { params: { id: string } }) {
         queryKey: ["business-details", params.id],
       });
       setIsOpenEditModal(false);
+      queryClient.invalidateQueries({
+        queryKey: ["appointments"],
+      });
     },
   });
 

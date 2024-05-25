@@ -7,6 +7,6 @@ export const updateAppointment = async ({
 }: {
   id: string;
   body: Partial<Pick<Appointment, "date" | "serviceId" | "status">>;
-}) => {
+}): Promise<Appointment> => {
   return axios.patch(`${apiPaths.APPOINTMENTS}/${id}`, body);
 };

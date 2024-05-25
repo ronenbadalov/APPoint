@@ -3,20 +3,26 @@ import { AppointmentCard } from "@/components/AppointmentCard";
 import { updateAppointment } from "@/mutations";
 import { getAppointments } from "@/queries";
 import { AppointmentStatus } from "@prisma/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoaderCircle } from "lucide-react";
 import { useMemo } from "react";
 
 export default function MyProfilePage() {
-  const { data, isLoading, refetch } = useQuery({
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery({
     queryKey: ["appointments"],
     queryFn: getAppointments,
   });
 
-  const { mutate: editAppointment, isPending: isEditPeding } = useMutation({
+  const { mutate: editAppointment } = useMutation({
     mutationFn: updateAppointment,
-    onSuccess: async () => {
-      refetch();
+    onSuccess: async (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["appointments"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["business-details"],
+      });
     },
   });
 
