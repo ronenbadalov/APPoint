@@ -4,6 +4,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { FormItemCalendar } from "../../types";
 
@@ -20,8 +21,13 @@ export default function FormItemDate(props: DateField) {
         <FormItem>
           <FormLabel>{props.label}</FormLabel>
           <FormControl>
-            <DatePicker value={props.value} onDateChange={field.onChange} />
+            <DatePicker
+              value={props.value}
+              onDateChange={field.onChange}
+              fromDate={new Date()}
+            />
           </FormControl>
+          <FormMessage></FormMessage>
         </FormItem>
       )}
     ></FormField>

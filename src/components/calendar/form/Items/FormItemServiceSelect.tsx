@@ -10,18 +10,18 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormItemCalendar, Service } from "../../types";
 
-import { AppointmentStatus } from "@prisma/client";
-import { FormItemCalendar } from "../../types";
-
-interface StatusField extends FormItemCalendar {
-  value: AppointmentStatus;
+interface SelectField extends FormItemCalendar {
+  value: string;
+  services: Service[];
 }
 
-export default function FormItemStatus(props: StatusField) {
+export default function FormItemServiceSelect(props: SelectField) {
   return (
     <FormField
       control={props.control}
@@ -30,21 +30,18 @@ export default function FormItemStatus(props: StatusField) {
         <FormItem>
           <FormLabel>{props.label}</FormLabel>
           <FormControl>
-            <Select defaultValue={props.value} onValueChange={field.onChange}>
-              <SelectTrigger className="w-[200px]">
+            <Select onValueChange={field.onChange}>
+              <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder={props.placeholder} />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value={AppointmentStatus.PENDING_BUSINESS}>
-                    Pending Approval
-                  </SelectItem>
-                  <SelectItem value={AppointmentStatus.CONFIRMED}>
-                    Confirm
-                  </SelectItem>
-                  <SelectItem value={AppointmentStatus.CANCELLED}>
-                    Cancel
-                  </SelectItem>
+                  <SelectLabel>{props.label}</SelectLabel>
+                  {props.services.map((service) => (
+                    <SelectItem value={service.id + ""}>
+                      {service.name}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>

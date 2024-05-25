@@ -13,6 +13,10 @@ interface EventDimension extends Appointment {
   left: number;
 }
 
+interface Collision {
+  [id: string]: { group: number };
+}
+
 export function calcEventHightAndTop(
   dayStart: Moment,
   hourHeight: number,
@@ -35,11 +39,21 @@ export function calcEventDimesionsAndTop(
   hoursHeight: number,
   events: Appointment[]
 ): EventDimension[] {
-  const arr = [];
+  const dimensionsAppointments: EventDimension[] = [];
+
+  let groups = 0;
+  const colisions: Collision = {};
   for (const event of events) {
     let collisionsEvents = 0; // will shrink the width
-    const eventStartDate = new Date(event.date).getTime();
-    const endDate = eventStartDate + event.service.duration * 60 * 60;
+    const eventStartDate = new Date(
+      new Date(event.date).setSeconds(0, 0)
+    ).getTime();
+    const endDate = moment(eventStartDate)
+      .seconds(0)
+      .milliseconds(0)
+      .add(event.service.duration, "minutes")
+      .toDate()
+      .getTime();
 
     const dayStart = moment(eventStartDate)
       .clone()
@@ -48,47 +62,79 @@ export function calcEventDimesionsAndTop(
     const { top, height } = calcEventHightAndTop(
       dayStart,
       hoursHeight,
-      moment(eventStartDate),
-      moment(eventStartDate).add(event.service.duration, "minutes")
+      moment(eventStartDate).clone(),
+      moment(eventStartDate).clone().add(event.service.duration, "minutes")
     );
 
-    const colisions = [];
-    for (let i = 0; i < arr.length; i++) {
-      const secondEventStartDate = new Date(arr[i].date).getTime();
-      const secondEventEndDate = moment(secondEventStartDate).add(arr[i].service.duration, "minutes").toDate()
-
-      // collision
-      if (
-        (endDate >= secondEventStartDate && endDate <= secondEventStartDate) ||
-        (eventStartDate >= secondEventStartDate &&
-          eventStartDate <= Number(secondEventEndDate))
-      ) {
-        collisionsEvents++;
-        colisions.push(i);
-      }
-    }
-
-    let prevWidth = 0;
-    for (let i = 0; i < colisions.length; i++) {
-      arr[i].width = (100 / (collisionsEvents + 1)) - 1.5;
-
-      arr[i].left = 0;
-      if (i - 1 >= 0) {
-        arr[i].left = prevWidth + 3;
-        prevWidth += 3;
-      }
-      prevWidth += arr[i].width;
-    }
-
-    const dimension = {
+    dimensionsAppointments.push({
       top,
-      left: colisions.length !== 0 ? prevWidth + 3 : 0,
       height,
-      width: collisionsEvents !== 0 ? (100 / (collisionsEvents + 1)) - 1.5 : 100, // percentage
-    };
+      width: 93,
+      left: 3,
+      ...event,
+    });
 
-    arr.push({ ...event, ...dimension });
+    for (let j = 0; j < events.length; j++) {
+      const secondEvent = events[j];
+      if (event.id === secondEvent.id) {
+        continue;
+      }
+
+      const secondEventStartDate = new Date(
+        new Date(secondEvent.date).setSeconds(0, 0)
+      ).getTime();
+      const secondEventEndDate = moment(secondEventStartDate)
+        .add(event.service.duration, "minutes")
+        .seconds(0)
+        .milliseconds(0)
+        .toDate()
+        .getTime();
+
+      if (
+        (secondEventEndDate > eventStartDate && secondEventEndDate < endDate) ||
+        (secondEventStartDate >= eventStartDate &&
+          secondEventEndDate <= endDate) ||
+        (secondEventStartDate > eventStartDate &&
+          secondEventStartDate < endDate)
+      ) {
+        if(colisions[secondEvent.id]) {
+          colisions[event.id] = { group: colisions[secondEvent.id].group };
+        
+        }
+        if (!colisions[event.id]) {
+          colisions[event.id] = { group: groups };
+          groups++;
+        }
+
+        if (colisions[event.id] && !colisions[secondEvent.id]) {
+          colisions[secondEvent.id] = { group: colisions[event.id].group };
+        }
+      }
+    }
   }
 
-  return arr;
+  let colisionGroups: string[][] = [];
+  for (const [colisionKey, colisionValue] of Object.entries(colisions)) {
+    if (!colisionGroups[colisionValue.group]) {
+      colisionGroups[colisionValue.group] = [];
+    }
+
+    colisionGroups[colisionValue.group].push(colisionKey);
+  }
+
+  for (const group of colisionGroups) {
+    let groupItemCount = 0;
+    for (const colisionId of group) {
+      const colisionIdx = dimensionsAppointments.findIndex(
+        (c) => c.id === colisionId
+      );
+      dimensionsAppointments[colisionIdx].width = 100 / group.length - 7;
+
+      dimensionsAppointments[colisionIdx].left =
+        (100 / group.length) * groupItemCount + 3;
+      groupItemCount++;
+    }
+  }
+
+  return dimensionsAppointments;
 }

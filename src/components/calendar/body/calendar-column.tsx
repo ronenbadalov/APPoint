@@ -9,6 +9,8 @@ import EventCalendar from "./event";
 interface ColumnUI extends DayEvent {
   isLast?: Boolean;
   rowHeight?: number;
+  shouldScrollTo: boolean;
+  onClickCell?: Function;
 }
 
 const EVENT_PADDING_Y = 2; //px
@@ -20,19 +22,21 @@ export default function CalendarColumn({
   events,
   isLast = false,
   rowHeight = 150,
+  shouldScrollTo = true,
+  onClickCell = () => {},
 }: ColumnUI) {
   const redLineRef = useRef<HTMLDivElement>(null);
   const paintHours = [];
   const inlineStyles = {
     height: `${rowHeight}px`,
-    borderRight: isLast ? "1px solid #f4f3fb" : "",
-    borderTop: "1px solid #f4f3fb",
-    borderLeft: "1px solid #f4f3fb",
+    borderRight: isLast ? "1px solid" : "",
+    borderTop: "1px solid ",
+    borderLeft: "1px solid ",
+    borderColor: "rgba(244, 243, 251, 0.5)",
   };
 
   useEffect(() => {
-    if (!redLineRef.current) return;
-
+    if (!shouldScrollTo || !redLineRef.current) return;
     redLineRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
   }, []);
 
@@ -76,12 +80,13 @@ export default function CalendarColumn({
   for (let i = 0; i < 24; i++) {
     paintHours.push(
       <div
+        onClick={() => onClickCell(date, i)}
         style={inlineStyles}
         className={
-          "bg-white dark:bg-[#0A0A0A]" +
-          (i === 23 ? "border-b-[1px] dark:bg-[#0A0A0A] border-[#f4f3fb]" : "")
+          "bg-white dark:bg-[#020817] " +
+          (i === 23 ? "border-b-[1px] dark:bg-[#020817] border-[#f4f3fb]" : "")
         }
-        key={"hour_" + Math.random()}
+        key={i}
       ></div>
     );
   }
@@ -103,9 +108,10 @@ export default function CalendarColumn({
     );
     for (const event of appointments) {
       eventToPrint.push(
-        <div>
+        <div key={event.id}>
           <EventCalendar
             id={event.id}
+            customerId={event.customerId}
             date={event.date}
             status={event.status}
             service={event.service}
@@ -124,9 +130,19 @@ export default function CalendarColumn({
   return (
     <div>
       <div id="column-hours-container">
-        <div className="flex flex-col items-center justify-center py-3 px-2 gap-y-1 bg-[#fafafb] dark:bg-[#0A0A0A] border-[#f4f3fb] border-t-[1px] border-l-[1px] border-r-[1px]">
-          <div className="text-3xl font-bold">{title + ""}</div>
-          <div className="text-[#7c789a]">{subtitle + ""}</div>
+        <div className="flex flex-col items-center justify-center py-3 px-2 gap-y-1 bg-[#fafafb] dark:bg-[#020817] border-[#f4f3fb] border-t-[1px] border-l-[1px] border-r-[1px] border-b-[1px] sticky top-[57px] z-50 h-24">
+          <div
+            className={`flex flex-col text-center ${
+              isToday ? "bg-[#1A73E8] py-2 px-5 rounded-full text-white" : ""
+            }`}
+          >
+            <div className="text-2xl font-bold">{title + ""}</div>
+            <div
+              className={`text-xs ${isToday ? "text-white" : "text-[#7c789a]"}`}
+            >
+              {subtitle + ""}
+            </div>
+          </div>
         </div>
         <div>
           <div className="relative">{printEvents()}</div>

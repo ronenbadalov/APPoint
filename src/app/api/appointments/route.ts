@@ -54,14 +54,3 @@ export async function GET(req: NextRequest) {
   });
 }
 
-export async function POST(req: NextRequest) {
-  const session = await getServerSession(options);
-  if (session?.user.role !== "BUSINESS") {
-    return new NextResponse(
-      JSON.stringify({ error: "Not allowed to get business appointments" }),
-      {
-        status: 500,
-      }
-    );
-  }
-}
