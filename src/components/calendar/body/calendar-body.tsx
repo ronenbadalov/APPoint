@@ -1,16 +1,18 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { getAppointments } from "@/queries";
-import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import moment, { Moment } from "moment";
 import { useEffect, useMemo, useState } from "react";
+import { Appointment } from "../types";
 import { getDays, getDaysOfWeekByDay } from "../utils/date";
 import CalendarColumn from "./calendar-column";
 
 interface CalendarBody {
   changeWeek: Function;
+  events?: Appointment[];
+  shouldScrollTo: boolean;
+  onClickCell?: Function;
 }
 
 enum ResponsiveModes {
@@ -22,16 +24,17 @@ enum ResponsiveModes {
 const HOUR_TEXT_LINE_HEIGHT = 16; //px
 const CELL_HEIGHT = 150; //px
 
-export default function CalendarBody({ changeWeek }: CalendarBody) {
+export default function CalendarBody({
+  changeWeek,
+  events,
+  shouldScrollTo,
+  onClickCell,
+}: CalendarBody) {
   const [currentDay, setCurrectDay] = useState<Moment>(moment().weekday(0));
   const [daysOfWeek, setDaysOfWeek] = useState<Moment[]>([]);
   const [responsiveMode, setResponsiveMode] = useState<ResponsiveModes>(
     ResponsiveModes.LG
   );
-  const { data, isLoading } = useQuery({
-    queryKey: ["appointments"],
-    queryFn: getAppointments,
-  });
 
   const hours = [];
 
@@ -94,7 +97,7 @@ export default function CalendarBody({ changeWeek }: CalendarBody) {
     const daysOfNextWeek = getDays(nextDay, 7);
     setCurrectDay(nextDay);
     setDaysOfWeek(daysOfNextWeek);
-    changeWeek(currentDay);
+    changeWeek(nextDay);
   };
 
   const decDay = async () => {
@@ -102,7 +105,7 @@ export default function CalendarBody({ changeWeek }: CalendarBody) {
     const daysOfNextWeek = getDays(nextDay, 7);
     setCurrectDay(nextDay);
     setDaysOfWeek(daysOfNextWeek);
-    changeWeek(currentDay);
+    changeWeek(nextDay);
   };
 
   const calendarColumns = () => {
@@ -120,9 +123,11 @@ export default function CalendarBody({ changeWeek }: CalendarBody) {
           date={daysOfWeek[i]}
           title={title}
           subtitle={subtitle}
-          events={data}
+          events={events}
           isLast={i === numberOfColumns - 1}
           key={"column_day_" + i}
+          shouldScrollTo={shouldScrollTo}
+          onClickCell={onClickCell}
         />
       );
     }
@@ -138,7 +143,7 @@ export default function CalendarBody({ changeWeek }: CalendarBody) {
     <div>
       <div className="grid" style={gridStyles}>
         <div>
-          <div className="flex gap-x-5 items-center justify-center bg-[#fafafb] dark:bg-[#0A0A0A] border-[#f4f3fb] border-[1px] h-[89px]">
+          <div className="flex gap-x-5 items-center justify-center bg-[#fafafb] dark:bg-[#020817] z-50 border-[#f4f3fb] border-[1px] h-24 sticky top-[57px] ">
             <Button onClick={decDay} size="icon" variant="ghost">
               <ChevronLeft size="20px" />
             </Button>

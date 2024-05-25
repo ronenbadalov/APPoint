@@ -1,6 +1,5 @@
 "use client";
 
-import { ModeToggle } from "@/components/Header/ModeToggle";
 import { EditAppointmentFormData } from "@/components/calendar/form/edit-appointment-form";
 import { EditAppointmentModal } from "@/components/calendar/modals/edit-appointment-modal";
 import { Appointment, Service } from "@/components/calendar/types";
@@ -96,8 +95,7 @@ export default function CalendarPage() {
         onOpen={onOpen}
         isOpen={isOpen}
       />
-      <ModeToggle />
-      <WeeklyCalendar />
+      <WeeklyCalendar events={data} shouldScrollTo={true} />
     </section>
   );
 }
