@@ -8,9 +8,13 @@ import { Button } from "../ui/button";
 
 interface AppointmentCardProps {
   appointment: Appointment;
+  cancel?: () => void;
 }
 
-export const AppointmentCard = ({ appointment }: AppointmentCardProps) => {
+export const AppointmentCard = ({
+  appointment,
+  cancel,
+}: AppointmentCardProps) => {
   return (
     <div className="flex items-center justify-between ">
       <div className="flex items-center space-x-4">
@@ -95,9 +99,10 @@ export const AppointmentCard = ({ appointment }: AppointmentCardProps) => {
             className="w-6 h-6 cursor-pointer"
           />
         </Link>
-        {/* RONEN-TODO: make this work */}
-        {appointment.status !== "CANCELLED" && (
-          <Button variant="destructive">Cancel</Button>
+        {cancel && appointment.status !== "CANCELLED" && (
+          <Button variant="destructive" onClick={cancel}>
+            Cancel
+          </Button>
         )}
       </div>
     </div>

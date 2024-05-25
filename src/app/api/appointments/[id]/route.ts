@@ -69,7 +69,8 @@ export async function PATCH(
         );
       }
 
-      const { date } = await req.json();
+      const { date, status } = await req.json();
+
       updatedBusinessDetails = await prisma.appointment.update({
         where: {
           id,
@@ -77,6 +78,7 @@ export async function PATCH(
         },
         data: {
           date,
+          status,
         },
       });
     }

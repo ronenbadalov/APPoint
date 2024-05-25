@@ -1,15 +1,25 @@
 "use client";
 import { AppointmentCard } from "@/components/AppointmentCard";
+import { updateAppointment } from "@/mutations";
 import { getAppointments } from "@/queries";
-import { useQuery } from "@tanstack/react-query";
+import { AppointmentStatus } from "@prisma/client";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { LoaderCircle } from "lucide-react";
 import { useMemo } from "react";
 
 export default function MyProfilePage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ["appointments"],
     queryFn: getAppointments,
   });
+
+  const { mutate: editAppointment, isPending: isEditPeding } = useMutation({
+    mutationFn: updateAppointment,
+    onSuccess: async () => {
+      refetch();
+    },
+  });
+
   const upcomingAppointments = useMemo(
     () =>
       data?.filter((appointment) => new Date(appointment.date) >= new Date()),
@@ -37,7 +47,16 @@ export default function MyProfilePage() {
 
       {upcomingAppointments?.length ? (
         upcomingAppointments.map((appointment) => (
-          <AppointmentCard appointment={appointment} />
+          <AppointmentCard
+            key={appointment.id}
+            appointment={appointment}
+            cancel={() => {
+              editAppointment({
+                id: appointment.id,
+                body: { status: AppointmentStatus.CANCELLED },
+              });
+            }}
+          />
         ))
       ) : (
         <p className="text-muted-foreground">No upcoming appointments</p>
@@ -45,7 +64,7 @@ export default function MyProfilePage() {
       <h2 className="text-xl font-bold">Past Appointments</h2>
       {pastAppointments?.length ? (
         pastAppointments.map((appointment) => (
-          <AppointmentCard appointment={appointment} />
+          <AppointmentCard key={appointment.id} appointment={appointment} />
         ))
       ) : (
         <p className="text-muted-foreground">No past appointments</p>
