@@ -8,7 +8,6 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Service } from "../types";
 import FormItemDate from "./Items/FormItemDate";
-import FormItemStatus from "./Items/FormItemStatus";
 
 interface AppointmentForm {
   dateValue: Date;
@@ -19,19 +18,15 @@ interface AppointmentForm {
 }
 const FormSchema = z.object({
   startDate: z.date({ message: "Please enter valid date" }),
-  status: z
-    .nativeEnum(AppointmentStatus)
-    .refine((status) => status, { message: "Please select status" }),
 });
 
 export type EditAppointmentFormData = z.infer<typeof FormSchema>;
 
-export default function EditAppointmentForm(props: AppointmentForm) {
+export default function EditAppointmentFormConsumer(props: AppointmentForm) {
   const form = useForm<EditAppointmentFormData>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       startDate: props.dateValue,
-      status: props.statusValue,
     },
   });
 
@@ -41,7 +36,7 @@ export default function EditAppointmentForm(props: AppointmentForm) {
 
   return (
     <Form {...form}>
-      {props.service && (
+      {props.service ? (
         <div className="flex flex-col gap-y-4 mt-4">
           <div className="flex items-center gap-x-3">
             <Label>Name: </Label>
@@ -60,16 +55,20 @@ export default function EditAppointmentForm(props: AppointmentForm) {
 
           <div className="flex items-center gap-x-3">
             <Label>Duration: </Label>
-            <p className="text-xs">{props.service.duration} Minutes</p>
+            <p className="text-xs">{props.service.duration}</p>
           </div>
 
-          {props.statusValue && (
+          {props.statusValue ? (
             <div className="flex items-center gap-x-3">
               <Label>Status: </Label>
               <p className="text-xs">{props.statusValue}</p>
             </div>
+          ) : (
+            ""
           )}
         </div>
+      ) : (
+        ""
       )}
 
       <FormItemDate
@@ -78,15 +77,6 @@ export default function EditAppointmentForm(props: AppointmentForm) {
         control={form.control}
         placeholder="Start Date"
       />
-
-      {props.statusValue && (
-        <FormItemStatus
-          value={props.statusValue}
-          name="status"
-          control={form.control}
-          placeholder="Change Status"
-        />
-      )}
 
       <Button
         disabled={props.isLoading}

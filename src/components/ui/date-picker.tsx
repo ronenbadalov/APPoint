@@ -15,6 +15,7 @@ import { Label } from "./label";
 interface DatePickerType {
   onDateChange: Function;
   value: Date;
+  fromDate?: Date;
 }
 
 export function DatePicker(props: DatePickerType) {
@@ -34,11 +35,16 @@ export function DatePicker(props: DatePickerType) {
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "dd/LL/yyyy HH:mm:ss") : <span>Pick a date</span>}
+          {date ? (
+            format(date, "dd/LL/yyyy HH:mm:ss")
+          ) : (
+            <span>Pick a date</span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
         <Calendar
+          fromDate={props.fromDate}
           mode="single"
           selected={date}
           onSelect={(date) => {

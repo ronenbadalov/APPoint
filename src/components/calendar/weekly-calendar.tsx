@@ -4,10 +4,19 @@ import moment, { Moment } from "moment";
 import { useState } from "react";
 import TooolbarCalendar from "./Header/ToolbarCalendar";
 import CalendarBody from "./body/calendar-body";
-import { AddEvent } from "./modals/add-event-modal";
-import { CalendarViews } from "./types";
+import { Appointment, CalendarViews } from "./types";
 
-export default function WeeklyCalendar() {
+interface WeeklyCalendar {
+  events?: Appointment[];
+  shouldScrollTo: boolean;
+  onClickCell?: Function;
+}
+
+export default function WeeklyCalendar({
+  events,
+  shouldScrollTo,
+  onClickCell,
+}: WeeklyCalendar) {
   const [title, setTitle] = useState<String>(moment().format("MMMM YYYY"));
 
   const onChangeWeek = (weekMoment: Moment) => {
@@ -16,10 +25,14 @@ export default function WeeklyCalendar() {
   };
   return (
     <div className="py-5">
-      <AddEvent />
       <TooolbarCalendar title={title} defaultView={CalendarViews.DAY} />
       <div className="mt-4">
-        <CalendarBody changeWeek={onChangeWeek} />
+        <CalendarBody
+          changeWeek={onChangeWeek}
+          events={events}
+          shouldScrollTo={shouldScrollTo}
+          onClickCell={onClickCell}
+        />
       </div>
     </div>
   );

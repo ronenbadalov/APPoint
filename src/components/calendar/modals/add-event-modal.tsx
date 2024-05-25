@@ -1,26 +1,29 @@
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  DialogContent
 } from "@/components/ui/dialog";
+import AddAppointmentForm from "../form/add-appointment-form";
+import { Service } from "../types";
 
-export function AddEvent() {
+interface AddAppointmentModal {
+  dateValue: Date;
+  onOpen: Function;
+  isOpen: boolean;
+  services: Service[] | null;
+  onSubmitAddForm: Function;
+  isLoading: boolean
+}
+
+export function AddEventModal(props: AddAppointmentModal) {
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="secondary">Add Event</Button>
-      </DialogTrigger>
+    <Dialog open={props.isOpen} onOpenChange={(open) => props.onOpen(open)}>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add Event</DialogTitle>
-        </DialogHeader>
-        <DialogFooter>
-          <Button type="submit">Save changes</Button>
-        </DialogFooter>
+        <AddAppointmentForm
+          isLoading={props.isLoading}
+          onSubmitAddForm={props.onSubmitAddForm}
+          services={props.services}
+          dateValue={props.dateValue}
+        />
       </DialogContent>
     </Dialog>
   );
