@@ -43,7 +43,6 @@ export async function GET(
       },
     })) as unknown as BusinessData;
 
-    console.log("id", consumerDetails?.id)
     if (businessDetails?.appointments) {
       businessDetails.appointments = businessDetails.appointments.map(
         (appointment) => ({
