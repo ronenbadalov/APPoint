@@ -49,7 +49,7 @@ export default function CalendarPage() {
       return values;
     }
 
-    const appointment: Appointment | null = data.find(
+    const appointment: Appointment | undefined = data.find(
       (appointment: Appointment) => appointment.id === search
     );
     if (!appointment) {

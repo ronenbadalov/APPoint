@@ -7,11 +7,11 @@ import { usePathname } from "next/navigation";
 
 const clientLinks = [
   { title: "Explore", href: paths.EXPLORE },
-  { title: "My profile", href: paths.MY_PROFILE },
+  { title: "My appointments", href: paths.MY_APPOINTMENTS },
 ];
 
 const businessLinks = [
-  { title: "My Business", href: paths.MY_BUSINESS },
+  { title: "My business", href: paths.MY_BUSINESS },
   { title: "Calendar", href: paths.CALENDAR },
 ];
 
