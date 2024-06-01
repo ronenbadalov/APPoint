@@ -69,17 +69,23 @@ export async function PATCH(
         );
       }
 
-      const { date } = await req.json();
+      const { date, status } = await req.json();
+
+      const data: { date?: string; status?: AppointmentStatus } = {};
+      if (date) {
+        data.status = AppointmentStatus.PENDING_BUSINESS;
+        data.date = date;
+      }
+      if (status === AppointmentStatus.CANCELLED) {
+        data.status = AppointmentStatus.CANCELLED;
+      }
 
       updatedBusinessDetails = await prisma.appointment.update({
         where: {
           id,
           customerId: customerDetails?.id,
         },
-        data: {
-          date,
-          status: AppointmentStatus.PENDING_BUSINESS,
-        },
+        data,
       });
     }
 
