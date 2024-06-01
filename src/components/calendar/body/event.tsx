@@ -55,7 +55,7 @@ export default function EventCalendar(props: eventUI) {
     backgroundColor: statusBg || "",
     border: borderColor ? `1px solid ${borderColor}` : "",
     PointerEvent: props.customerId ? "cursor" : "none",
-    cursor: props.customerId ? 'pointer' : 'not-allowed'
+    cursor: !props.customerId && session?.user.role === Role.CUSTOMER ? 'not-allowed' : 'pointer'
   };
 
   const onClickEvent = () => {
@@ -76,7 +76,7 @@ export default function EventCalendar(props: eventUI) {
     <div
       onClick={onClickEvent}
       style={inlineStyles}
-      className={`rounded-[12px] p-2 absolute flex items-center flex-col w-full ${
+      className={`rounded-[12px] p-2 absolute flex items-center flex-col w-full z-40 ${
         !props.customerId ? "bg-background" : ""
       } ${top}`}
     >
