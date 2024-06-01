@@ -36,6 +36,9 @@ export async function GET(req: NextRequest) {
       where: {
         customerId: customerDetails.id,
       },
+      orderBy: {
+        date: "asc",
+      },
     });
   } else if (session?.user.role === "BUSINESS") {
     const businessDetails = await prisma.businessDetails.findFirst({
@@ -67,11 +70,11 @@ export async function GET(req: NextRequest) {
           select: {
             user: {
               select: {
-                name: true
-              }
-            }
-          }
-        }
+                name: true,
+              },
+            },
+          },
+        },
       },
       where: {
         AND: {
@@ -87,4 +90,3 @@ export async function GET(req: NextRequest) {
     status: 200,
   });
 }
-
