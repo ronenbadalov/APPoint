@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { Role } from "@prisma/client";
+import { AppointmentStatus, Role } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { options } from "../../auth/[...nextauth]/options";
@@ -69,7 +69,7 @@ export async function PATCH(
         );
       }
 
-      const { date, status } = await req.json();
+      const { date } = await req.json();
 
       updatedBusinessDetails = await prisma.appointment.update({
         where: {
@@ -78,7 +78,7 @@ export async function PATCH(
         },
         data: {
           date,
-          status,
+          status: AppointmentStatus.PENDING_BUSINESS,
         },
       });
     }

@@ -1,3 +1,4 @@
+import { WorkingHours } from "@prisma/client";
 import moment, { Moment } from "moment";
 import { Appointment } from "./../types";
 
@@ -97,9 +98,8 @@ export function calcEventDimesionsAndTop(
         (secondEventStartDate > eventStartDate &&
           secondEventStartDate < endDate)
       ) {
-        if(colisions[secondEvent.id]) {
+        if (colisions[secondEvent.id]) {
           colisions[event.id] = { group: colisions[secondEvent.id].group };
-        
         }
         if (!colisions[event.id]) {
           colisions[event.id] = { group: groups };
@@ -137,4 +137,33 @@ export function calcEventDimesionsAndTop(
   }
 
   return dimensionsAppointments;
+}
+
+export function isInWorkingHours(
+  workingHours: WorkingHours | null, 
+  currentDay: Moment,
+  currentHour: number
+): boolean {
+  if(!workingHours) {
+    return true
+  }
+
+  const startTime = new Date(new Date(workingHours?.startTime || 0)).getHours();
+  const endTime = new Date(new Date(workingHours?.endTime || 0)).getHours();
+  if (
+    new Date().setMinutes(0, 0, 0) <=
+      Number(currentDay.toDate().setMinutes(0, 0, 0)) &&
+    !workingHours?.isClosed &&
+    startTime <= currentHour
+  ) {
+    if (
+      (endTime === currentHour &&
+        new Date(new Date(workingHours?.endTime || 0)).getMinutes() !== 0) ||
+      endTime >= currentHour + 1
+    ) {
+      return true;
+    }
+  }
+
+  return false;
 }

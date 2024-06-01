@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkingHours } from "@prisma/client";
 import moment, { Moment } from "moment";
 import { useState } from "react";
 import TooolbarCalendar from "./Header/ToolbarCalendar";
@@ -10,12 +11,14 @@ interface WeeklyCalendar {
   events?: Appointment[];
   shouldScrollTo: boolean;
   onClickCell?: Function;
+  workingHours?: WorkingHours[]
 }
 
 export default function WeeklyCalendar({
   events,
   shouldScrollTo,
   onClickCell,
+  workingHours
 }: WeeklyCalendar) {
   const [title, setTitle] = useState<String>(moment().format("MMMM YYYY"));
 
@@ -28,6 +31,7 @@ export default function WeeklyCalendar({
       <TooolbarCalendar title={title} defaultView={CalendarViews.DAY} />
       <div className="mt-4">
         <CalendarBody
+          workingHours={workingHours}
           changeWeek={onChangeWeek}
           events={events}
           shouldScrollTo={shouldScrollTo}

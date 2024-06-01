@@ -1,9 +1,10 @@
 "client only";
 
+import { WorkingHours } from "@prisma/client";
 import moment from "moment";
 import { useEffect, useRef } from "react";
 import { Appointment, DayEvent } from "../types";
-import { calcEventDimesionsAndTop } from "../utils/calendar";
+import { calcEventDimesionsAndTop, isInWorkingHours } from "../utils/calendar";
 import EventCalendar from "./event";
 
 interface ColumnUI extends DayEvent {
@@ -11,6 +12,7 @@ interface ColumnUI extends DayEvent {
   rowHeight?: number;
   shouldScrollTo: boolean;
   onClickCell?: Function;
+  workingHours?: WorkingHours;
 }
 
 const EVENT_PADDING_Y = 2; //px
@@ -24,6 +26,8 @@ export default function CalendarColumn({
   rowHeight = 150,
   shouldScrollTo = true,
   onClickCell = () => {},
+  workingHours,
+  isCustomer
 }: ColumnUI) {
   const redLineRef = useRef<HTMLDivElement>(null);
   const paintHours = [];
@@ -78,10 +82,18 @@ export default function CalendarColumn({
   }
 
   for (let i = 0; i < 24; i++) {
+    const isAllowedTouch = isInWorkingHours(workingHours || null, date, i);
+
+    let cursor = isAllowedTouch ? "pointer" : "not-allowed";
+
+    if(isAllowedTouch && !isCustomer) {
+      cursor = ''
+    }
+    
     paintHours.push(
       <div
-        onClick={() => onClickCell(date, i)}
-        style={inlineStyles}
+        onClick={() => isAllowedTouch && onClickCell(date, i)}
+        style={{ ...inlineStyles, cursor }}
         className={
           "bg-white dark:bg-[#020817] " +
           (i === 23 ? "border-b-[1px] dark:bg-[#020817] border-[#f4f3fb]" : "")

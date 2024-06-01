@@ -2,6 +2,7 @@ import {
   Dialog,
   DialogContent
 } from "@/components/ui/dialog";
+import { WorkingHours } from "@prisma/client";
 import AddAppointmentForm from "../form/add-appointment-form";
 import { Service } from "../types";
 
@@ -12,6 +13,7 @@ interface AddAppointmentModal {
   services: Service[] | null;
   onSubmitAddForm: Function;
   isLoading: boolean
+  workingHours?: WorkingHours[]
 }
 
 export function AddEventModal(props: AddAppointmentModal) {
@@ -23,6 +25,7 @@ export function AddEventModal(props: AddAppointmentModal) {
           onSubmitAddForm={props.onSubmitAddForm}
           services={props.services}
           dateValue={props.dateValue}
+          workingHours={props.workingHours}
         />
       </DialogContent>
     </Dialog>

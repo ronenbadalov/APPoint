@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { WorkingHours } from "@prisma/client";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import moment, { Moment } from "moment";
 import { useEffect, useMemo, useState } from "react";
@@ -13,6 +14,7 @@ interface CalendarBody {
   events?: Appointment[];
   shouldScrollTo: boolean;
   onClickCell?: Function;
+  workingHours?: WorkingHours[]
 }
 
 enum ResponsiveModes {
@@ -29,6 +31,7 @@ export default function CalendarBody({
   events,
   shouldScrollTo,
   onClickCell,
+  workingHours
 }: CalendarBody) {
   const [currentDay, setCurrectDay] = useState<Moment>(moment().weekday(0));
   const [daysOfWeek, setDaysOfWeek] = useState<Moment[]>([]);
@@ -128,6 +131,7 @@ export default function CalendarBody({
           key={"column_day_" + i}
           shouldScrollTo={shouldScrollTo}
           onClickCell={onClickCell}
+          workingHours={workingHours?.[i]}
         />
       );
     }

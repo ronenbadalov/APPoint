@@ -5,7 +5,7 @@ import { EditAppointmentModal } from "@/components/calendar/modals/edit-appointm
 import { Appointment, Service } from "@/components/calendar/types";
 import WeeklyCalendar from "@/components/calendar/weekly-calendar";
 import { updateAppointment } from "@/mutations";
-import { getAppointments } from "@/queries";
+import { getAppointments, getMyBusiness } from "@/queries";
 import { AppointmentStatus } from "@prisma/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -17,6 +17,15 @@ export default function CalendarPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["appointments"],
     queryFn: getAppointments,
+  });
+
+  const {
+    data: businessData,
+    isLoading: isLodingBusiness,
+    refetch,
+  } = useQuery({
+    queryKey: ["my-business"],
+    queryFn: getMyBusiness,
   });
   const queryClient = useQueryClient();
 
@@ -95,7 +104,7 @@ export default function CalendarPage() {
         onOpen={onOpen}
         isOpen={isOpen}
       />
-      <WeeklyCalendar events={data} shouldScrollTo={true} />
+      <WeeklyCalendar events={data} shouldScrollTo={true} workingHours={businessData?.workingHours}/>
     </section>
   );
 }
