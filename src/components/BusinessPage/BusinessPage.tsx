@@ -389,7 +389,7 @@ export const BusinessPage = ({
                                 placeholder="Tell us about your business"
                                 rows={5}
                                 {...field}
-                                className="w-auto"
+                                className="w-full"
                                 value={field.value ?? ""}
                               />
                             </FormControl>
@@ -426,7 +426,7 @@ export const BusinessPage = ({
                                   debouncedFetchData(e.target.value);
                                   field.onChange(e);
                                 }}
-                                className="w-auto"
+                                className="w-full"
                               />
                             </FormControl>
                             {errors.address && (
@@ -483,7 +483,7 @@ export const BusinessPage = ({
                         render={({ field, formState: { errors } }) => (
                           <FormItem>
                             <FormControl>
-                              <Input {...field} ref={null} className="w-auto" />
+                              <Input {...field} ref={null} className="w-full" />
                             </FormControl>
                             {errors.phone && (
                               <FormMessage>{errors.phone.message}</FormMessage>

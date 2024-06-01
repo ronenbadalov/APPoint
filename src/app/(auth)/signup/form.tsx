@@ -20,6 +20,7 @@ import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -42,7 +43,7 @@ type FormData = z.infer<typeof FormSchema>;
 
 export default function FormPage() {
   const { toast } = useToast();
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const form = useForm<FormData>({
@@ -52,6 +53,7 @@ export default function FormPage() {
   const onSubmit = async (data: FormData) => {
     const { email, password, name, role } = data;
     try {
+      setIsSubmitting(true);
       const response: any = await signIn("signup", {
         email,
         password,
@@ -70,6 +72,8 @@ export default function FormPage() {
       toast({ title: "Successfully signed up" });
     } catch (error: any) {
       toast({ title: "An error occurred", description: error.message });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -173,7 +177,9 @@ export default function FormPage() {
           )}
         />
         <div className="grid">
-          <Button type="submit">Submit</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            Submit
+          </Button>
         </div>
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -186,7 +192,11 @@ export default function FormPage() {
           </div>
         </div>
         <div className="grid">
-          <Button type="button" onClick={() => signIn("google")}>
+          <Button
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => signIn("google")}
+          >
             <Image
               priority
               src={googleLogoIcon}
