@@ -58,16 +58,34 @@ const FormSchema = z.object({
   address: z.string().min(3, {
     message: "Address too short.",
   }),
-  phone: z.string().min(9, {
-    message: "Phone number must be at least 9 characters.",
-  }),
-  workingHours: z.array(
-    z.object({
-      day: z.number(),
-      isClosed: z.boolean().nullable(),
-      startTime: z.date().nullable(),
-      endTime: z.date().nullable(),
+  phone: z
+    .string()
+    .min(9, {
+      message: "Phone number must be at least 9 characters.",
     })
+    .regex(
+      /^\+?[0-9]+$/i,
+      "Phone number must contain only numbers and '+' sign."
+    ),
+  workingHours: z.array(
+    z
+      .object({
+        day: z.number(),
+        isClosed: z.boolean().nullable(),
+        startTime: z.date().nullable(),
+        endTime: z.date().nullable(),
+      })
+      .refine(
+        (data) => {
+          if (data.startTime && data.endTime) {
+            return data.startTime < data.endTime;
+          }
+          return true; // If either is null, skip the check
+        },
+        {
+          message: "Wrong time range",
+        }
+      )
   ),
   description: z.string().nullable(),
   services: z.array(serviceObj),
@@ -260,9 +278,9 @@ export const BusinessPage = ({
       <Form {...form}>
         <form className="space-y-4">
           <div className="py-5 flex flex-col max-w-screen-lg m-auto gap-5">
-            <div className="flex w-full items-center gap-5">
-              <div className="flex gap-5 items-center w-full">
-                <div className="w-28 h-28 rounded-full relative border-2 border-primary">
+            <div className="flex w-full items-center gap-5  sm:flex-nowrap flex-wrap">
+              <div className="flex gap-5 items-center w-full  flex-wrap md:flex-nowrap">
+                <div className="w-28 h-28 rounded-full relative border-2 border-primary min-w-[7rem] min-h-[7rem]">
                   {(imageSrc || businessData?.imageUrl) && (
                     <Image
                       src={imageSrc || businessData?.imageUrl || ""}
@@ -337,7 +355,7 @@ export const BusinessPage = ({
                     )}
                   />
                 ) : (
-                  <h1 className="ml-4 text-2xl font-bold">
+                  <h1 className=" text-2xl font-bold">
                     {businessData?.businessName}
                   </h1>
                 )}
@@ -352,7 +370,7 @@ export const BusinessPage = ({
             <Separator className="my-5" />
             <table>
               <tbody className="flex flex-col gap-3">
-                <tr className="flex gap-5">
+                <tr className="flex gap-5 flex-wrap md:flex-nowrap">
                   <td className="w-36">
                     <p className="text-muted-foreground font-semibold">
                       Description
@@ -371,6 +389,7 @@ export const BusinessPage = ({
                                 placeholder="Tell us about your business"
                                 rows={5}
                                 {...field}
+                                className="w-auto"
                                 value={field.value ?? ""}
                               />
                             </FormControl>
@@ -386,7 +405,7 @@ export const BusinessPage = ({
                     )}
                   </td>
                 </tr>
-                <tr className="flex gap-5">
+                <tr className="flex gap-5 flex-wrap md:flex-nowrap">
                   <td className="w-36">
                     <p className="text-muted-foreground font-semibold">
                       Address
@@ -407,6 +426,7 @@ export const BusinessPage = ({
                                   debouncedFetchData(e.target.value);
                                   field.onChange(e);
                                 }}
+                                className="w-auto"
                               />
                             </FormControl>
                             {errors.address && (
@@ -418,8 +438,8 @@ export const BusinessPage = ({
                         )}
                       />
                     ) : businessData?.address ? (
-                      <div className="flex gap-2">
-                        <p>{businessData.address}</p>
+                      <div className="flex gap-2 flex-wrap">
+                        <p className="break-all">{businessData.address}</p>
                         <Link
                           href={`https://www.google.com/maps?saddr=My+Location&daddr=${businessData.address}`}
                           target="_blank"
@@ -450,7 +470,7 @@ export const BusinessPage = ({
                     )}
                   </td>
                 </tr>
-                <tr className="flex gap-5">
+                <tr className="flex gap-5  flex-wrap md:flex-nowrap">
                   <td className="w-36">
                     <p className="text-muted-foreground font-semibold">Phone</p>
                   </td>
@@ -463,7 +483,7 @@ export const BusinessPage = ({
                         render={({ field, formState: { errors } }) => (
                           <FormItem>
                             <FormControl>
-                              <Input {...field} ref={null} />
+                              <Input {...field} ref={null} className="w-auto" />
                             </FormControl>
                             {errors.phone && (
                               <FormMessage>{errors.phone.message}</FormMessage>
@@ -472,7 +492,7 @@ export const BusinessPage = ({
                         )}
                       />
                     ) : businessData?.phone ? (
-                      <p className="">{businessData?.phone}</p>
+                      <p className="break-all">{businessData?.phone}</p>
                     ) : (
                       <p className="text-muted-foreground italic">
                         No phone provided
@@ -480,7 +500,7 @@ export const BusinessPage = ({
                     )}
                   </td>
                 </tr>
-                <tr className="flex gap-5">
+                <tr className="flex gap-5 flex-wrap md:flex-nowrap">
                   <td className="w-36">
                     <p className="text-muted-foreground font-semibold whitespace-nowrap	">
                       Working Hours
@@ -503,50 +523,73 @@ export const BusinessPage = ({
                           return (
                             <tr
                               key={index}
-                              className="flex items-center gap-2 pb-3"
+                              className="flex items-center md:gap-2 pb-3 md:flex-row flex-col "
                             >
-                              <td className="w-36">
+                              <td className="w-36 pb-2 md:pb-0">
                                 <p className="text-muted-foreground">{day}</p>
                               </td>
                               <td className="w-full">
                                 {isEditing ? (
-                                  <div className="flex align-center gap-3">
+                                  <div className="flex align-center gap-3 md:flex-row flex-col">
                                     <FormField
                                       control={form.control}
                                       name={`workingHours.${index}.startTime`}
-                                      render={({ field }) => (
-                                        <TimePicker
-                                          date={field.value ?? undefined}
-                                          setDate={field.onChange}
-                                          disabled={
-                                            !!workingHours[index]?.isClosed
-                                          }
-                                        />
-                                      )}
+                                      render={({
+                                        field,
+                                        formState: { errors },
+                                      }) => {
+                                        const error =
+                                          errors?.workingHours?.[index]?.root;
+                                        return (
+                                          <FormItem>
+                                            <TimePicker
+                                              date={field.value ?? undefined}
+                                              setDate={field.onChange}
+                                              disabled={
+                                                !!workingHours[index]?.isClosed
+                                              }
+                                            />
+                                            {error && (
+                                              <FormMessage>
+                                                {error.message}
+                                              </FormMessage>
+                                            )}
+                                          </FormItem>
+                                        );
+                                      }}
                                     />
-                                    <div className="pt-6">-</div>
+                                    <div className="pt-6 hidden md:block">
+                                      -
+                                    </div>
                                     <FormField
                                       control={form.control}
                                       name={`workingHours.${index}.endTime`}
                                       render={({ field }) => (
-                                        <TimePicker
-                                          date={field.value ?? undefined}
-                                          setDate={field.onChange}
-                                          disabled={
-                                            !!workingHours[index]?.isClosed
-                                          }
-                                        />
+                                        <FormItem>
+                                          <TimePicker
+                                            date={field.value ?? undefined}
+                                            setDate={field.onChange}
+                                            disabled={
+                                              !!workingHours[index]?.isClosed
+                                            }
+                                          />
+                                        </FormItem>
                                       )}
                                     />
                                     <FormField
                                       control={form.control}
                                       name={`workingHours.${index}.isClosed`}
                                       render={({ field }) => (
-                                        <FormItem className="space-y-0 flex gap-2 pt-[1.9rem]">
+                                        <FormItem className="space-y-0 flex gap-2 pt-0 md:pt-[1.9rem]">
                                           <FormControl>
                                             <Checkbox
                                               checked={!!field.value}
-                                              onCheckedChange={field.onChange}
+                                              onCheckedChange={(e) => {
+                                                field.onChange(e);
+                                                form.clearErrors(
+                                                  `workingHours.${index}`
+                                                );
+                                              }}
                                             />
                                           </FormControl>
                                           <FormLabel>Closed</FormLabel>
@@ -575,14 +618,14 @@ export const BusinessPage = ({
                     </table>
                   </td>
                 </tr>
-                <tr className="flex gap-5">
+                <tr className="flex gap-5 flex-wrap md:flex-nowrap">
                   <td className="w-36">
                     <p className="text-muted-foreground font-semibold">
                       Services
                     </p>
                   </td>
                   <td className=" w-full">
-                    <div className="grid gap-5 grid-cols-3">
+                    <div className="flex gap-3 flex-wrap">
                       {isEditing ? (
                         servicesFields.map((field, i) => (
                           <ServiceCard
