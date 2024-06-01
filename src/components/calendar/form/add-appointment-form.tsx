@@ -75,7 +75,8 @@ export default function AddAppointmentForm(props: AppointmentForm) {
     const isAllowed = isInWorkingHours(
       props.workingHours?.[day] || null,
       moment(new Date(startDate.setHours(0, 0, 0, 0))).clone(),
-      new Date(form.watch("startDate")).getHours() + selectedService.duration / 60
+      new Date(form.watch("startDate")).getHours() + new Date(form.watch("startDate")).getMinutes() / 60,
+      selectedService.duration / 60
     );
 
     if (!isAllowed) {

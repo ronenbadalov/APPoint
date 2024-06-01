@@ -17,6 +17,7 @@ interface AppointmentForm {
   service: Service | null;
   onSubmitEditForm: Function;
   isLoading?: boolean;
+  fullName?: string | null;
 }
 const FormSchema = z.object({
   startDate: z.date({ message: "Please enter valid date" }),
@@ -41,27 +42,32 @@ export default function EditAppointmentForm(props: AppointmentForm) {
   };
 
   const statusLabel = useMemo(() => {
-    if(AppointmentStatus.PENDING_BUSINESS === props.statusValue) {
-      return 'Pending Approval'
-    } 
-
-    if(AppointmentStatus.CANCELLED === props.statusValue) {
-      return 'Cancelled'
+    if (AppointmentStatus.PENDING_BUSINESS === props.statusValue) {
+      return "Pending Approval";
     }
 
-    if(AppointmentStatus.CONFIRMED === props.statusValue) {
-      return 'Confirmed'
+    if (AppointmentStatus.CANCELLED === props.statusValue) {
+      return "Cancelled";
     }
 
-    if(AppointmentStatus.PENDING_CUSTOMER === props.statusValue) {
-      return 'Pending for Consumer'
+    if (AppointmentStatus.CONFIRMED === props.statusValue) {
+      return "Confirmed";
     }
 
-    return null
-  }, [props.statusValue])
+    if (AppointmentStatus.PENDING_CUSTOMER === props.statusValue) {
+      return "Pending for Consumer";
+    }
+
+    return null;
+  }, [props.statusValue]);
 
   return (
     <Form {...form}>
+      <div className="flex items-center gap-x-3">
+        <Label>Customer Name: </Label>
+        <p className="text-xs">{props.fullName}</p>
+      </div>
+
       <FormItemDate
         value={props.dateValue}
         name="startDate"

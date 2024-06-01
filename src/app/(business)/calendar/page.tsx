@@ -41,17 +41,19 @@ export default function CalendarPage() {
 
   const searchParams = useSearchParams();
   const search = searchParams.get("edit");
-  const { isOpen, date, status, service } = useMemo(() => {
+  const { isOpen, date, status, service, fullName } = useMemo(() => {
     const values: {
       isOpen: boolean;
       status: AppointmentStatus;
       date: Date;
       service: Service | null;
+      fullName: string | null;
     } = {
       isOpen: false,
       date: new Date(),
       status: AppointmentStatus.CONFIRMED,
       service: null,
+      fullName: null,
     };
 
     if (!search || !data) {
@@ -69,6 +71,7 @@ export default function CalendarPage() {
     values.status = appointment.status;
     values.service = appointment.service;
     values.isOpen = true;
+    values.fullName = appointment.customer?.user.name || null
     return values;
   }, [search, isLoading]);
 
@@ -103,8 +106,13 @@ export default function CalendarPage() {
         status={status}
         onOpen={onOpen}
         isOpen={isOpen}
+        fullName={fullName}
       />
-      <WeeklyCalendar events={data} shouldScrollTo={true} workingHours={businessData?.workingHours}/>
+      <WeeklyCalendar
+        events={data}
+        shouldScrollTo={true}
+        workingHours={businessData?.workingHours}
+      />
     </section>
   );
 }

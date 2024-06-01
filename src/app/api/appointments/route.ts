@@ -63,6 +63,15 @@ export async function GET(req: NextRequest) {
             price: true,
           },
         },
+        customer: {
+          select: {
+            user: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
       },
       where: {
         AND: {
