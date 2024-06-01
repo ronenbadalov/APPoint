@@ -1,7 +1,8 @@
 "client only";
 
-import { WorkingHours } from "@prisma/client";
+import { Role, WorkingHours } from "@prisma/client";
 import moment from "moment";
+import { useSession } from "next-auth/react";
 import { useEffect, useRef } from "react";
 import { Appointment, DayEvent } from "../types";
 import { calcEventDimesionsAndTop, isInWorkingHours } from "../utils/calendar";
@@ -27,9 +28,10 @@ export default function CalendarColumn({
   shouldScrollTo = true,
   onClickCell = () => {},
   workingHours,
-  isCustomer
+  isCustomer,
 }: ColumnUI) {
   const redLineRef = useRef<HTMLDivElement>(null);
+  const { data: session } = useSession();
   const paintHours = [];
   const inlineStyles = {
     height: `${rowHeight}px`,
@@ -86,16 +88,25 @@ export default function CalendarColumn({
 
     let cursor = isAllowedTouch ? "pointer" : "not-allowed";
 
-    if(isAllowedTouch && !isCustomer) {
-      cursor = ''
+    if (isAllowedTouch && session?.user.role === Role.BUSINESS) {
+      cursor = "";
     }
-    
+
+    let opacity = 'opacity-100'
+    if(!isAllowedTouch) {
+      opacity = 'opacity-70'
+    }
+
     paintHours.push(
       <div
         onClick={() => isAllowedTouch && onClickCell(date, i)}
-        style={{ ...inlineStyles, cursor }}
+        style={{
+          ...inlineStyles,
+          // backgroundColor: !isAllowedTouch ? "#414141" : "",
+          cursor,
+        }}
         className={
-          "bg-white dark:bg-[#020817] " +
+          `bg-white dark:bg-[#020817] ${opacity} ` +
           (i === 23 ? "border-b-[1px] dark:bg-[#020817] border-[#f4f3fb]" : "")
         }
         key={i}
