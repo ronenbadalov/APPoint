@@ -55,6 +55,7 @@ export default function EventCalendar(props: eventUI) {
     backgroundColor: statusBg || "",
     border: borderColor ? `1px solid ${borderColor}` : "",
     PointerEvent: props.customerId ? "cursor" : "none",
+    cursor: props.customerId ? 'pointer' : 'not-allowed'
   };
 
   const onClickEvent = () => {

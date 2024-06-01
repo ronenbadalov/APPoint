@@ -84,16 +84,10 @@ export default function Page({ params }: { params: { id: string } }) {
     }
 
     if (isOnSameDayAndHour) {
-      setAddAppointmentDate(new Date(moment().toDate().setSeconds(0, 0)));
+      setAddAppointmentDate(new Date(moment().toDate()));
     } else {
       setAddAppointmentDate(
-        date
-          .clone()
-          .set("hours", index)
-          .minutes(0)
-          .seconds(0)
-          .millisecond(0)
-          .toDate()
+        date.clone().set("hours", index).seconds(0).millisecond(0).toDate()
       );
     }
 
@@ -194,6 +188,7 @@ export default function Page({ params }: { params: { id: string } }) {
             onOpen={onOpenAppointmentModal}
             isLoading={isEditPeding}
             isOpen={isOpenEditModal}
+            workingHours={businessData?.workingHours}
           />
           <DetailsAppointmentModal
             service={event?.service || null}
@@ -208,9 +203,11 @@ export default function Page({ params }: { params: { id: string } }) {
             dateValue={addAppointmentDate}
             onOpen={(open: boolean) => setIsOpen(open)}
             isOpen={isOpen}
+            workingHours={businessData?.workingHours}
           />
           <BusinessPage businessData={businessData} isLoading={isLoading} />
           <WeeklyCalendar
+            workingHours={businessData?.workingHours}
             events={businessData?.appointments}
             shouldScrollTo={false}
             onClickCell={handleOnClickCell}

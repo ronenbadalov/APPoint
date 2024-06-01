@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AppointmentStatus } from "@prisma/client";
+import { AppointmentStatus, WorkingHours } from "@prisma/client";
 import { LoaderCircle } from "lucide-react";
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Service } from "../types";
@@ -15,6 +16,7 @@ interface AppointmentForm {
   service: Service | null;
   onSubmitEditForm: Function;
   isLoading?: boolean;
+  workingHours?: WorkingHours[];
 }
 const FormSchema = z.object({
   startDate: z.date({ message: "Please enter valid date" }),
@@ -34,8 +36,35 @@ export default function EditAppointmentFormConsumer(props: AppointmentForm) {
     props.onSubmitEditForm(data);
   };
 
+  const statusLabel = useMemo(() => {
+    if(AppointmentStatus.PENDING_BUSINESS === props.statusValue) {
+      return 'Pending Approval'
+    } 
+
+    if(AppointmentStatus.CANCELLED === props.statusValue) {
+      return 'Cancelled'
+    }
+
+    if(AppointmentStatus.CONFIRMED === props.statusValue) {
+      return 'Confirmed'
+    }
+
+    if(AppointmentStatus.PENDING_CUSTOMER === props.statusValue) {
+      return 'Pending for Consumer'
+    }
+
+    return null
+  }, [props.statusValue])
+
   return (
     <Form {...form}>
+      <FormItemDate
+        value={props.dateValue}
+        name="startDate"
+        control={form.control}
+        placeholder="Start Date"
+      />
+
       {props.service ? (
         <div className="flex flex-col gap-y-4 mt-4">
           <div className="flex items-center gap-x-3">
@@ -58,10 +87,10 @@ export default function EditAppointmentFormConsumer(props: AppointmentForm) {
             <p className="text-xs">{props.service.duration}</p>
           </div>
 
-          {props.statusValue ? (
+          {statusLabel ? (
             <div className="flex items-center gap-x-3">
               <Label>Status: </Label>
-              <p className="text-xs">{props.statusValue}</p>
+              <p className="text-xs">{statusLabel}</p>
             </div>
           ) : (
             ""
@@ -70,13 +99,6 @@ export default function EditAppointmentFormConsumer(props: AppointmentForm) {
       ) : (
         ""
       )}
-
-      <FormItemDate
-        value={props.dateValue}
-        name="startDate"
-        control={form.control}
-        placeholder="Start Date"
-      />
 
       <Button
         disabled={props.isLoading}

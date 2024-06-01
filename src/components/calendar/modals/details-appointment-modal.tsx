@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { AppointmentStatus } from "@prisma/client";
+import { useMemo } from "react";
 import { Service } from "../types";
 
 interface DetailsAppointmentModal {
@@ -16,6 +17,25 @@ interface DetailsAppointmentModal {
 }
 
 export function DetailsAppointmentModal(props: DetailsAppointmentModal) {
+  const statusLabel = useMemo(() => {
+    if(AppointmentStatus.PENDING_BUSINESS === props.status) {
+      return 'Pending Approval'
+    } 
+
+    if(AppointmentStatus.CANCELLED === props.status) {
+      return 'Cancelled'
+    }
+
+    if(AppointmentStatus.CONFIRMED === props.status) {
+      return 'Confirmed'
+    }
+
+    if(AppointmentStatus.PENDING_CUSTOMER === props.status) {
+      return 'Pending for Consumer'
+    }
+
+    return null
+  }, [props.status])
   return (
     <Dialog open={props.isOpen} onOpenChange={(open) => props.onOpen(open)}>
       <DialogContent>
@@ -45,7 +65,7 @@ export function DetailsAppointmentModal(props: DetailsAppointmentModal) {
 
           <div className="flex items-center gap-x-3">
             <Label>Status: </Label>
-            <p className="text-xs">{props.status}</p>
+            <p className="text-xs">{statusLabel}</p>
           </div>
         </div>
       </DialogContent>

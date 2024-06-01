@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AppointmentStatus } from "@prisma/client";
 import { LoaderCircle } from "lucide-react";
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Service } from "../types";
@@ -39,8 +40,44 @@ export default function EditAppointmentForm(props: AppointmentForm) {
     props.onSubmitEditForm(data);
   };
 
+  const statusLabel = useMemo(() => {
+    if(AppointmentStatus.PENDING_BUSINESS === props.statusValue) {
+      return 'Pending Approval'
+    } 
+
+    if(AppointmentStatus.CANCELLED === props.statusValue) {
+      return 'Cancelled'
+    }
+
+    if(AppointmentStatus.CONFIRMED === props.statusValue) {
+      return 'Confirmed'
+    }
+
+    if(AppointmentStatus.PENDING_CUSTOMER === props.statusValue) {
+      return 'Pending for Consumer'
+    }
+
+    return null
+  }, [props.statusValue])
+
   return (
     <Form {...form}>
+      <FormItemDate
+        value={props.dateValue}
+        name="startDate"
+        control={form.control}
+        placeholder="Start Date"
+      />
+
+      {props.statusValue && (
+        <FormItemStatus
+          value={props.statusValue}
+          name="status"
+          control={form.control}
+          placeholder="Change Status"
+        />
+      )}
+
       {props.service && (
         <div className="flex flex-col gap-y-4 mt-4">
           <div className="flex items-center gap-x-3">
@@ -63,29 +100,13 @@ export default function EditAppointmentForm(props: AppointmentForm) {
             <p className="text-xs">{props.service.duration} Minutes</p>
           </div>
 
-          {props.statusValue && (
+          {statusLabel && (
             <div className="flex items-center gap-x-3">
               <Label>Status: </Label>
-              <p className="text-xs">{props.statusValue}</p>
+              <p className="text-xs">{statusLabel}</p>
             </div>
           )}
         </div>
-      )}
-
-      <FormItemDate
-        value={props.dateValue}
-        name="startDate"
-        control={form.control}
-        placeholder="Start Date"
-      />
-
-      {props.statusValue && (
-        <FormItemStatus
-          value={props.statusValue}
-          name="status"
-          control={form.control}
-          placeholder="Change Status"
-        />
       )}
 
       <Button

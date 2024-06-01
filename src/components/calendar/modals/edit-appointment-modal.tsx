@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AppointmentStatus, Role } from "@prisma/client";
+import { AppointmentStatus, Role, WorkingHours } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import EditAppointmentForm from "../form/edit-appointment-form";
 import EditAppointmentFormConsumer from "../form/edit-appointment-form-cosumer";
@@ -18,6 +18,7 @@ interface EditAppointmentModal {
   service: Service | null;
   onSubmitEditForm: Function;
   isLoading?: boolean;
+  workingHours?: WorkingHours[]
 }
 
 export function EditAppointmentModal(props: EditAppointmentModal) {
@@ -39,6 +40,7 @@ export function EditAppointmentModal(props: EditAppointmentModal) {
           />
         ) : (
           <EditAppointmentFormConsumer
+            workingHours={props.workingHours}
             isLoading={props.isLoading}
             onSubmitEditForm={props.onSubmitEditForm}
             service={props.service}
