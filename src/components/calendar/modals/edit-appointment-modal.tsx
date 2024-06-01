@@ -19,6 +19,7 @@ interface EditAppointmentModal {
   onSubmitEditForm: Function;
   isLoading?: boolean;
   workingHours?: WorkingHours[]
+  fullName: string | null
 }
 
 export function EditAppointmentModal(props: EditAppointmentModal) {
@@ -37,6 +38,7 @@ export function EditAppointmentModal(props: EditAppointmentModal) {
             service={props.service}
             dateValue={props.dateValue}
             statusValue={props.status}
+            fullName={props.fullName}
           />
         ) : (
           <EditAppointmentFormConsumer

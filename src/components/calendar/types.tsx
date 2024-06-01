@@ -23,7 +23,7 @@ export interface DayEvent {
   title: String;
   subtitle: String;
   events?: Appointment[];
-  isCustomer?: boolean
+  isCustomer?: boolean;
 }
 
 export interface Events {
@@ -47,10 +47,11 @@ export interface Appointment {
   date: string;
   status: AppointmentStatus;
   service: Service;
+  customer?: { user: { name: string | null } };
 }
 
 export interface FormItemCalendar {
-  name: 'startDate' | 'status' | 'service';
+  name: "startDate" | "status" | "service";
   label?: string;
   placeholder?: string;
   control: Control<any>;

@@ -84,7 +84,7 @@ export default function CalendarColumn({
   }
 
   for (let i = 0; i < 24; i++) {
-    const isAllowedTouch = isInWorkingHours(workingHours || null, date, i);
+    const isAllowedTouch = isInWorkingHours(workingHours || null, date, i, 1);
 
     let cursor = isAllowedTouch ? "pointer" : "not-allowed";
 
