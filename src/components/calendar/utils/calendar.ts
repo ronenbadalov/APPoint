@@ -140,12 +140,13 @@ export function calcEventDimesionsAndTop(
 }
 
 export function isInWorkingHours(
-  workingHours: WorkingHours | null, 
+  workingHours: WorkingHours | null,
   currentDay: Moment,
-  currentHour: number
+  currentHour: number,
+  serviceDuration: number
 ): boolean {
-  if(!workingHours) {
-    return true
+  if (!workingHours) {
+    return true;
   }
 
   const startTime = new Date(new Date(workingHours?.startTime || 0)).getHours();
@@ -156,11 +157,15 @@ export function isInWorkingHours(
     !workingHours?.isClosed &&
     startTime <= currentHour
   ) {
+    console.log("eee", serviceDuration, endTime );
     if (
-      (endTime === currentHour &&
-        new Date(new Date(workingHours?.endTime || 0)).getMinutes() !== 0) ||
-      endTime >= currentHour + 1
+      endTime === currentHour &&
+      new Date(new Date(workingHours?.endTime || 0)).getMinutes() !== 0
     ) {
+      return false;
+    }
+
+    if (endTime >= currentHour + serviceDuration) {
       return true;
     }
   }

@@ -76,7 +76,7 @@ export default function EventCalendar(props: eventUI) {
     <div
       onClick={onClickEvent}
       style={inlineStyles}
-      className={`rounded-[12px] p-2 absolute flex items-center flex-col w-full z-40 ${
+      className={`overflow-hidden rounded-[12px] p-2 absolute flex items-center flex-col w-full z-30 ${
         !props.customerId ? "bg-background" : ""
       } ${top}`}
     >
