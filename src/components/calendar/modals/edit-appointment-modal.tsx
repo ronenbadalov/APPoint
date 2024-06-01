@@ -18,8 +18,8 @@ interface EditAppointmentModal {
   service: Service | null;
   onSubmitEditForm: Function;
   isLoading?: boolean;
-  workingHours?: WorkingHours[]
-  fullName: string | null
+  workingHours?: WorkingHours[];
+  fullName?: string | null;
 }
 
 export function EditAppointmentModal(props: EditAppointmentModal) {
