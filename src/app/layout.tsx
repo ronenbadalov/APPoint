@@ -22,7 +22,7 @@ const inter = Inter({
 
 export default async function RootLayout({ children }: ChildrenProps) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen`}>
         <Providers>
           <ThemeProvider
