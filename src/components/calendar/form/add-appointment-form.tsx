@@ -54,6 +54,11 @@ export default function AddAppointmentForm(props: AppointmentForm) {
     return minutes;
   }, [props.dateValue]);
 
+  const currentService = form.watch("service");
+  const currentServiceDetails = props.services?.find(
+    (service) => service.id === currentService
+  );
+
   const onSubmit = (data: AddAppointmentFormData) => {
     props.onSubmitAddForm(data);
   };
@@ -68,14 +73,15 @@ export default function AddAppointmentForm(props: AppointmentForm) {
       form.setError("startDate", {
         message: "Please select service first",
       });
-      return false
+      return false;
     }
 
     const day = startDate.getDay();
     const isAllowed = isInWorkingHours(
       props.workingHours?.[day] || null,
       moment(new Date(startDate.setHours(0, 0, 0, 0))).clone(),
-      new Date(form.watch("startDate")).getHours() + selectedService.duration / 60
+      new Date(form.watch("startDate")).getHours() +
+        selectedService.duration / 60
     );
 
     if (!isAllowed) {
@@ -87,40 +93,8 @@ export default function AddAppointmentForm(props: AppointmentForm) {
     return isAllowed;
   };
 
-  const renderServiceDetails = (serviceId: string | null) => {
-    const service = props.services?.find((s) => s.id === serviceId);
-    if (!service) {
-      return null;
-    }
-
-    return (
-      <div className="flex flex-col gap-y-4 mt-4">
-        <div className="flex items-center gap-x-3">
-          <Label>Name: </Label>
-          <p className="text-xs">{service.name}</p>
-        </div>
-
-        <div className="flex items-center gap-x-3">
-          <Label>Description: </Label>
-          <p className="text-xs">{service.description}</p>
-        </div>
-
-        <div className="flex items-center gap-x-3">
-          <Label>Price: </Label>
-          <p className="text-xs">{service.price}</p>
-        </div>
-
-        <div className="flex items-center gap-x-3">
-          <Label>Duration: </Label>
-          <p className="text-xs">{service.duration} Minutes</p>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <Form {...form}>
-      
       <FormItemServiceSelect
         services={props.services || []}
         value=""
@@ -128,7 +102,6 @@ export default function AddAppointmentForm(props: AppointmentForm) {
         control={form.control}
         placeholder="-- Select Service"
       />
-      
       <FormItemDate
         value={new Date(new Date(props.dateValue).setMinutes(defaultMinutes))}
         name="startDate"
@@ -137,8 +110,29 @@ export default function AddAppointmentForm(props: AppointmentForm) {
         workingHours={props.workingHours}
       />
 
-      {renderServiceDetails(form.getValues("service"))}
+      {currentServiceDetails && (
+        <div className="flex flex-col gap-y-4 mt-4">
+          <div className="flex items-center gap-x-3">
+            <Label>Name: </Label>
+            <p className="text-xs">{currentServiceDetails.name}</p>
+          </div>
 
+          <div className="flex items-center gap-x-3">
+            <Label>Description: </Label>
+            <p className="text-xs">{currentServiceDetails.description}</p>
+          </div>
+
+          <div className="flex items-center gap-x-3">
+            <Label>Price: </Label>
+            <p className="text-xs">{currentServiceDetails.price}</p>
+          </div>
+
+          <div className="flex items-center gap-x-3">
+            <Label>Duration: </Label>
+            <p className="text-xs">{currentServiceDetails.duration} Minutes</p>
+          </div>
+        </div>
+      )}
       <Button
         disabled={props.isLoading}
         type="submit"
